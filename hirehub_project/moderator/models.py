@@ -1,6 +1,10 @@
 from django.db import models
 from adminpanel.models import CustomUser
 from django.utils import timezone
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 
 class CompanyProfile(models.Model):
@@ -38,16 +42,25 @@ from django.dispatch import receiver
 @receiver(post_save, sender=CustomUser)
 def create_user_profiles(sender, instance, created, **kwargs):
     """Automatically create default profiles when a new user is created."""
-    if created:
-        if instance.user_type == 'applicant':
-            ApplicantProfile.objects.get_or_create(user=instance)
-        elif instance.user_type == 'recruiter':
-            # Create a default company for new recruiters
-            if not CompanyProfile.objects.filter(user=instance).exists():
-                CompanyProfile.objects.create(
-                    user=instance,
-                    company_name=f"{instance.username} Company"
-                )
+    try:
+        if created:
+            if instance.user_type == 'applicant':
+                profile, p_created = ApplicantProfile.objects.get_or_create(user=instance)
+                if p_created:
+                    logger.info(f"Created ApplicantProfile for user: {instance.username}")
+            elif instance.user_type == 'recruiter':
+                # Create a default company for new recruiters if none exists
+                if not CompanyProfile.objects.filter(user=instance).exists():
+                    CompanyProfile.objects.create(
+                        user=instance,
+                        company_name=f"{instance.username} Company"
+                    )
+                    logger.info(f"Created default CompanyProfile for recruiter: {instance.username}")
+    except Exception as e:
+        if 'logger' in globals():
+            logger.error(f"Error in create_user_profiles signal: {str(e)}")
+        else:
+            print(f"Error in create_user_profiles signal: {str(e)}")
 
 
 class JobPost(models.Model):

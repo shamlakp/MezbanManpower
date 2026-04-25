@@ -15,7 +15,8 @@ from django.views.decorators.csrf import csrf_exempt
 
 from rest_framework import status
 from rest_framework.authtoken.models import Token
-from rest_framework.permissions import AllowAny
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -220,6 +221,15 @@ class SendOTPAPI(APIView):
             otp_obj, created = OTPVerification.objects.get_or_create(email=email)
             otp_obj.generate_otp()
             
+            # Handle Test Mode without SMTP
+            if getattr(settings, 'OTP_TEST_MODE', False):
+                logger.info(f"OTP_TEST_MODE: Skipping email to {email}, code is {otp_obj.otp}")
+                return Response({
+                    'message': 'OTP generated (Test Mode)',
+                    'otp': otp_obj.otp, # Return OTP only in test mode
+                    'is_test': True
+                }, status=status.HTTP_200_OK)
+
             try:
                 send_mail(
                     subject='MEZBAN MANPOWER Registration OTP',
@@ -231,12 +241,13 @@ class SendOTPAPI(APIView):
                 logger.info(f"OTP successfully sent to {email}")
             except Exception as e:
                 logger.error(f"Failed to send OTP email to {email}: {str(e)}")
-                # If email fails, we still have the OTP in the DB (admin can see it)
-                # But we should inform the user
+                # If email fails, return 200 but inform that email failed
+                # This prevents a total registration block
                 return Response({
-                    'error': 'Email service currently unavailable. Please contact support or try again later.',
-                    'detail': type(e).__name__ 
-                }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+                    'message': 'OTP generated but email skipped (SMTP Error). Contact support.',
+                    'otp': otp_obj.otp if settings.DEBUG else None, # Give code manually if in debug mode
+                    'contact_support': True
+                }, status=status.HTTP_200_OK)
 
             return Response({'message': 'OTP sent successfully to your email.'}, status=status.HTTP_200_OK)
             
@@ -307,3 +318,34 @@ class PlatformSettingsAPI(APIView):
             p_settings = PlatformSettings.objects.create()
         serializer = PlatformSettingsSerializer(p_settings)
         return Response(serializer.data)
+
+class MeAPI(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        user = request.user
+        data = {
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'user_type': user.user_type,
+            'is_active': user.is_active
+        }
+        
+        # Lazy create profile if missing and include in response
+        if user.user_type == 'applicant':
+            profile, created = ApplicantProfile.objects.get_or_create(user=user)
+            from moderator.serializers import ApplicantProfileSerializer
+            data['profile'] = ApplicantProfileSerializer(profile, context={'request': request}).data
+        elif user.user_type == 'recruiter':
+            profile = CompanyProfile.objects.filter(user=user).first()
+            if not profile:
+                profile = CompanyProfile.objects.create(
+                    user=user,
+                    company_name=f"{user.username} Company"
+                )
+            from moderator.serializers import CompanyProfileSerializer
+            data['profile'] = CompanyProfileSerializer(profile, context={'request': request}).data
+        
+        return Response(data, status=status.HTTP_200_OK)

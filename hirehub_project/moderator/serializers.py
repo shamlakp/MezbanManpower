@@ -16,30 +16,24 @@ class JobPostSerializer(serializers.ModelSerializer):
 
 
 class ApplicantProfileSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
+    email = serializers.EmailField(source='user.email', read_only=True)
+    full_name = serializers.CharField(source='user.full_name', read_only=True)
     resume = serializers.FileField(required=False, allow_null=True)
 
     class Meta:
-        model = None
-        fields = ['user', 'phone', 'resume', 'bio', 'skills']
+        from .models import ApplicantProfile
+        model = ApplicantProfile
+        fields = ['user', 'username', 'email', 'full_name', 'phone', 'resume', 'bio', 'skills']
         read_only_fields = ['user']
 
-    def __init__(self, *args, **kwargs):
-        # set the actual model dynamically to avoid circular imports
-        from .models import ApplicantProfile as AP
-        self.Meta.model = AP
-        super().__init__(*args, **kwargs)
-
     def update(self, instance, validated_data):
+        # Handle file fields separately to ensure they are updated correctly
         resume = validated_data.pop('resume', None)
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
         if resume is not None:
-            instance.resume = resume
-        instance.save()
-        return instance
-
-    def create(self, validated_data):
-        return self.Meta.model.objects.create(**validated_data)
+             instance.resume = resume
+            
+        return super().update(instance, validated_data)
 
 
 class JobApplicationSerializer(serializers.ModelSerializer):

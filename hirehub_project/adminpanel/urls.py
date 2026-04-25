@@ -22,5 +22,6 @@ urlpatterns = [
      path('api/send-otp/', views.SendOTPAPI.as_view(), name='api_send_otp'),
      path('api/verify-otp/', views.VerifyOTPAPI.as_view(), name='api_verify_otp'),
      path('api/platform-settings/', views.PlatformSettingsAPI.as_view(), name='api_platform_settings'),
+     path('api/user/me/', views.MeAPI.as_view(), name='api_me'),
      path('user/<int:user_id>/ajax-delete/', views.ajax_delete_user, name='ajax_delete_user'),
 ]

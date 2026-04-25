@@ -42,11 +42,19 @@ DEBUG = env.bool('DEBUG', True)
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1', '.pythonanywhere.com'])
 
+# Security settings for production
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+
 # Application definition
 
 INSTALLED_APPS = [
-    'adminpanel',
-    'moderator',
+    'adminpanel.apps.AdminpanelConfig',
+    'moderator.apps.ModeratorConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -171,11 +179,14 @@ LOGIN_REDIRECT_URL = '/'
 
 # Email settings (use environment variables in production)
 EMAIL_BACKEND = env('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
-EMAIL_HOST = env('EMAIL_HOST', default='smtp-relay.brevo.com')
+EMAIL_HOST = env('EMAIL_HOST', default='smtp.gmail.com')
 EMAIL_PORT = env.int('EMAIL_PORT', 587)
 EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', True)
-EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='a717df001@smtp-brevo.com')
+EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='shamlawrk.347@gmail.com')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+
+# OTP Settings
+OTP_TEST_MODE = env.bool('OTP_TEST_MODE', default=DEBUG) # Enable by default in debug
 
 # CORS Settings
 CORS_ALLOW_ALL_ORIGINS = True

@@ -13,6 +13,10 @@ class CustomUser(AbstractUser):
     user_type = models.CharField(max_length=10, default='recruiter')
     email = models.EmailField(unique=True)
 
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}".strip() or self.username
+
     def __str__(self):
         return f"{self.username} ({self.user_type})"
 

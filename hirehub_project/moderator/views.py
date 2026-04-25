@@ -10,7 +10,17 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 import logging
 
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+
 logger = logging.getLogger(__name__)
+
+from .serializers import ApplicantProfileSerializer, CompanyProfileSerializer, JobApplicationSerializer
+from adminpanel.serializers import ApplicantSerializer
 
 from .utils import get_dashboard_url, notify_admin_on_login
 from .models import JobPost, CompanyProfile, ApplicantProfile, JobApplication 
@@ -301,18 +311,26 @@ class ApplicantProfileAPI(APIView):
 
     def get(self, request):
         profile, _ = ApplicantProfile.objects.get_or_create(user=request.user)
-        serializer = ApplicantProfileSerializer(profile)
+        serializer = ApplicantProfileSerializer(profile, context={'request': request})
         return Response(serializer.data)
 
     def patch(self, request):
-        logger.debug(f"ApplicantProfile patch data: {request.data}")
-        profile, _ = ApplicantProfile.objects.get_or_create(user=request.user)
-        serializer = ApplicantProfileSerializer(profile, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            # Return updated data
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            logger.info(f"ApplicantProfile Update attempt: User={request.user}, DataKeys={list(request.data.keys())}")
+            profile, created = ApplicantProfile.objects.get_or_create(user=request.user)
+            
+            serializer = ApplicantProfileSerializer(profile, data=request.data, partial=True, context={'request': request})
+            if serializer.is_valid():
+                serializer.save()
+                logger.info(f"ApplicantProfile successfully updated for {request.user}")
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                logger.warning(f"ApplicantProfile validation failed for {request.user}: {serializer.errors}")
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            logger.error(f"Critical error updating applicant profile for {request.user}: {str(e)}", exc_info=True)
+            return Response({"error": "Failed to update profile", "detail": str(e)}, 
+                          status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class RecruiterProfileAPI(APIView):
@@ -330,7 +348,7 @@ class RecruiterProfileAPI(APIView):
             )
             companies = [default_company]
              
-        serializer = CompanyProfileSerializer(companies, many=True)
+        serializer = CompanyProfileSerializer(companies, many=True, context={'request': request})
         return Response(serializer.data)
 
     def post(self, request):
@@ -350,8 +368,16 @@ class RecruiterProfileAPI(APIView):
         company = get_object_or_404(CompanyProfile, id=company_id, user=request.user)
         serializer = CompanyProfileSerializer(company, data=request.data, partial=True)
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
+            # Manual sync for better robustness with multipart data
+            for field in ['company_name', 'website', 'head_office_address', 'recruiter_name', 'recruiter_contact']:
+                if field in request.data:
+                    setattr(company, field, request.data[field])
+            
+            if 'logo' in request.FILES:
+                company.logo = request.FILES['logo']
+            
+            company.save()
+            return Response(CompanyProfileSerializer(company, context={'request': request}).data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request):
