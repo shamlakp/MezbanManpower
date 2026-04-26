@@ -32,10 +32,16 @@ def notify_admin_on_login(user):
     # We send the notification to the host email itself
     admin_email = getattr(settings, 'EMAIL_HOST_USER', '')
     if admin_email:
-        send_mail(
-            subject=f'Login Alert: {user.username}',
-            message=f'User {user.username} ({user.user_type}) has just logged into MEZBAN MANPOWER.',
-            from_email=admin_email,
-            recipient_list=[admin_email],
-            fail_silently=True,
-        )
+        try:
+            send_mail(
+                subject=f'Login Alert: {user.username}',
+                message=f'User {user.username} ({user.user_type}) has just logged into MEZBAN MANPOWER.',
+                from_email=admin_email,
+                recipient_list=[admin_email],
+                fail_silently=True,
+            )
+        except Exception as e:
+            # Log the error but don't crash the login process
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Failed to send admin login notification: {e}")

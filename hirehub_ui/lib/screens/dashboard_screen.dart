@@ -10,12 +10,16 @@ import '../utils/url_helper.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'login_screen.dart';
 import 'applicant_profile_screen.dart';
-import 'create_job_screen.dart';
+import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'job_detail_screen.dart';
 import 'recruiter_profile_screen.dart';
 import 'recruiter_applications_screen.dart';
+
 import 'applicant_applications_screen.dart';
+import 'applicant_dashboard_screen.dart';
 import 'admin_profile_screen.dart';
+import 'create_job_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -25,18 +29,65 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  String _currentLocation = 'Detecting...';
+  int _notificationCount = 0;
   int _currentIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    final jobProvider = context.read<JobProvider>();
-    final platformProvider = context.read<PlatformProvider>();
-    Future.microtask(() {
-      jobProvider.fetchJobs();
-      platformProvider.fetchSettings();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final jobProvider = context.read<JobProvider>();
+      final platformProvider = context.read<PlatformProvider>();
+      await jobProvider.fetchJobs();
+      await platformProvider.fetchSettings();
+      await _fetchLocation();
+      await _updateJobNotifications();
     });
   }
+
+  Future<void> _fetchLocation() async {
+    try {
+      final dio = Dio();
+      final response = await dio.get('https://ipapi.co/json/');
+      if (response.statusCode == 200) {
+        final data = response.data;
+        setState(() {
+          _currentLocation = "${data['city']}, ${data['country_name']}";
+        });
+      }
+    } catch (e) {
+      setState(() { _currentLocation = 'Location Unavailable'; });
+    }
+  }
+
+  Future<void> _updateJobNotifications() async {
+    try {
+      final jobProvider = context.read<JobProvider>();
+      final prefs = await SharedPreferences.getInstance();
+      final int currentTotalJobs = jobProvider.jobs.length;
+      final int lastSeen = prefs.getInt('last_seen_job_count') ?? 0;
+      setState(() {
+        _notificationCount = (currentTotalJobs > lastSeen) ? (currentTotalJobs - lastSeen) : 0;
+      });
+    } catch (e) {
+      // ignore errors
+    }
+  }
+
+  Future<void> _clearJobNotifications() async {
+    try {
+      final jobProvider = context.read<JobProvider>();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('last_seen_job_count', jobProvider.jobs.length);
+      setState(() {
+        _notificationCount = 0;
+      });
+    } catch (e) {
+      // ignore
+    }
+  }
+
 
   Future<void> _logout() async {
     final authProvider = context.read<AuthProvider>();
@@ -54,6 +105,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Logout'),
           ),
         ],
@@ -61,9 +113,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
 
     if (confirmed ?? false) {
-      await authProvider.logout();
-      navigator.pushReplacement(
+      try {
+        await authProvider.logout();
+      } catch (e) {
+        debugPrint('Logout error: $e');
+      }
+      navigator.pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => const LoginScreen()),
+        (route) => false,
       );
     }
   }
@@ -72,102 +129,83 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final username = auth.userData?['username'] ?? 'User';
-    final userType = auth.userData?['user_type'] ?? 'applicant';
+    debugPrint('DashboardScreen: userData: ${auth.userData}');
+    final rawUserType = (auth.userData?['user_type'] ?? auth.userData?['role'] ?? 'applicant').toString().toLowerCase();
+    
+    // Normalize userType
+    final String userType;
+    if (rawUserType.contains('admin')) {
+      userType = 'admin';
+    } else if (rawUserType.contains('recruiter')) {
+      userType = 'recruiter';
+    } else {
+      userType = 'applicant';
+    }
+    
     final isDesktop = MediaQuery.of(context).size.width > 900;
+    final bool isApplicant = userType == 'applicant';
 
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        leadingWidth: 160,
-        leading: Row(
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        elevation: 0,
+        centerTitle: false,
+        title: Row(
           children: [
-            const SizedBox(width: 16),
-            const Icon(Icons.location_on_outlined, color: Color(0xFF673AB7), size: 20),
-            const SizedBox(width: 8),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('You are in', style: TextStyle(color: Colors.grey, fontSize: 10)),
-                Text(
-                  'Kannur',
-                  style: TextStyle(
-                    color: Colors.black.withValues(alpha: 0.8),
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
+            const Icon(Icons.location_on_rounded, color: Color(0xFF673AB7), size: 20),
+            const SizedBox(width: 4),
+            Expanded(
+              child: Text(
+                _currentLocation,
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ],
         ),
-        title: null,
-        backgroundColor: Colors.white,
-        elevation: 0,
         actions: [
-          if (isDesktop && userType == 'admin') ...[
-            TextButton.icon(
-              icon: const Icon(Icons.admin_panel_settings_outlined, size: 20, color: Color(0xFF673AB7)),
-              label: const Text('Admin Dashboard', style: TextStyle(color: Color(0xFF673AB7))),
-              onPressed: () => UrlHelper.launchBackendUrl('/adminpanel/dashboard/'),
-            ),
-            TextButton.icon(
-              icon: const Icon(Icons.settings_suggest_outlined, size: 20, color: Colors.orangeAccent),
-              label: const Text('Django Admin', style: TextStyle(color: Colors.orangeAccent)),
-              onPressed: () => UrlHelper.launchBackendUrl('/admin/'),
-            ),
-            const VerticalDivider(width: 32, indent: 12, endIndent: 12),
-          ],
-          if (isDesktop) ...[
-            if (auth.isAuthenticated)
-              TextButton.icon(
-                onPressed: _logout,
-                icon: const Icon(Icons.logout, size: 20, color: Colors.redAccent),
-                label: const Text('Logout', style: TextStyle(color: Colors.redAccent)),
-              )
-            else
-              ElevatedButton.icon(
-                onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const LoginScreen()),
-                    ),
-                icon: const Icon(Icons.login, size: 20),
-                label: const Text('Sign In'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF673AB7),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-              ),
-            const SizedBox(width: 16),
-          ],
           IconButton(
-            icon: const Icon(Icons.notifications_outlined, color: Color(0xFF673AB7)),
-            onPressed: () {
-              // Notifications placeholder
-            },
+            icon: Badge(
+              label: Text('$_notificationCount', style: const TextStyle(color: Colors.white, fontSize: 10)),
+              child: const Icon(Icons.notifications_outlined, color: Color(0xFF673AB7)),
+            ),
+            onPressed: () {},
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout_rounded, color: Colors.redAccent),
+            onPressed: _logout,
+            tooltip: 'Logout',
           ),
           const SizedBox(width: 8),
         ],
-        iconTheme: const IconThemeData(color: Colors.black87),
       ),
       drawer: isDesktop ? null : _buildDrawer(context, username, userType),
       endDrawer: isDesktop ? null : const Drawer(
         child: SafeArea(child: FilterSidebar()),
       ),
-      body: _currentIndex == 0 
-          ? _buildHomeBody(context, isDesktop, userType)
-          : _buildOtherScreen(_currentIndex, userType),
+      body: _buildBody(userType, isDesktop, isApplicant),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) => setState(() => _currentIndex = index),
         selectedItemColor: const Color(0xFF673AB7),
         unselectedItemColor: Colors.grey,
+        showSelectedLabels: true,
+        showUnselectedLabels: true,
         type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.assignment_outlined), label: 'Applications'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profile'),
-        ],
+        items: isApplicant 
+          ? const [
+              BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Profile'),
+              BottomNavigationBarItem(icon: Icon(Icons.search), activeIcon: Icon(Icons.search), label: 'Jobs'),
+              BottomNavigationBarItem(icon: Icon(Icons.assignment_outlined), activeIcon: Icon(Icons.assignment), label: 'Applications'),
+            ]
+          : const [
+              BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Home'),
+              BottomNavigationBarItem(icon: Icon(Icons.assignment_outlined), label: 'Applications'),
+              BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profile'),
+            ],
       ),
       floatingActionButton: userType == 'recruiter' && _currentIndex == 0
           ? FloatingActionButton(
@@ -178,6 +216,52 @@ class _DashboardScreenState extends State<DashboardScreen> {
             )
           : null,
     );
+  }
+
+  String _getTabTitle(int index, String userType) {
+    if (userType == 'applicant') {
+      switch (index) {
+        case 0: return 'My Profile';
+        case 1: return 'Explore Jobs';
+        case 2: return 'My Applications';
+        default: return '';
+      }
+    }
+    switch (index) {
+      case 0: return 'HireHub';
+      case 1: return 'Applications';
+      case 2: return 'Profile';
+      default: return '';
+    }
+  }
+
+  Widget _buildBody(String userType, bool isDesktop, bool isApplicant) {
+    final auth = context.watch<AuthProvider>();
+    final bool isPublicTab = isApplicant ? _currentIndex == 1 : _currentIndex == 0;
+    
+    // Treat null userData as unauthenticated for private tabs to prevent crashes/weird states
+    if ((!auth.isAuthenticated || auth.userData == null) && !isPublicTab) {
+      return _buildAuthPlaceholder();
+    }
+
+    if (isApplicant) {
+      switch (_currentIndex) {
+        case 0: return ApplicantDashboardScreen(
+          showAppBar: false, 
+          onBrowseJobs: () => setState(() {
+            _currentIndex = 1;
+            _clearJobNotifications();
+          }),
+        );
+        case 1: return _buildHomeBody(context, isDesktop, userType);
+        case 2: return const ApplicantApplicationsScreen();
+        default: return const SizedBox.shrink();
+      }
+    }
+
+    // Default 3-tab logic for others
+    if (_currentIndex == 0) return _buildHomeBody(context, isDesktop, userType);
+    return _buildOtherScreen(_currentIndex, userType);
   }
 
   Widget _buildHomeBody(BuildContext context, bool isDesktop, String userType) {
@@ -200,30 +284,63 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           const SizedBox(height: 12),
           SizedBox(
-            height: 100,
+            height: 120, // Slightly taller for better aspect
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 8),
               itemCount: 6,
               itemBuilder: (context, index) {
                 final categories = ['IT', 'Design', 'Sales', 'Finance', 'HR', 'Support'];
-                final icons = [Icons.laptop, Icons.brush, Icons.trending_up, Icons.account_balance, Icons.people, Icons.headset_mic];
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                  child: Column(
-                    children: [
-                      Container(
-                        width: 60,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF673AB7).withValues(alpha: 0.1),
-                          shape: BoxShape.circle,
+                final imagePaths = [
+                  'https://images.unsplash.com/photo-1518770660439-4636190af475?w=200&h=200&fit=crop', // IT
+                  'https://images.unsplash.com/photo-1558655146-d09347e92766?w=200&h=200&fit=crop', // Design
+                  'https://images.unsplash.com/photo-1552581234-26160f608093?w=200&h=200&fit=crop', // Sales
+                  'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=200&h=200&fit=crop', // Finance
+                  'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=200&h=200&fit=crop', // HR
+                  'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=200&h=200&fit=crop', // Support
+                ];
+                return GestureDetector(
+                  onTap: () {
+                    context.read<JobProvider>().searchJobs(categories: [categories[index]]);
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 70,
+                          height: 70,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[200],
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.1),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                            image: DecorationImage(
+                              image: NetworkImage(imagePaths[index]),
+                              fit: BoxFit.cover,
+                              colorFilter: ColorFilter.mode(
+                                Colors.black.withValues(alpha: 0.1),
+                                BlendMode.darken,
+                              ),
+                            ),
+                          ),
                         ),
-                        child: Icon(icons[index % icons.length], color: const Color(0xFF673AB7)),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(categories[index % categories.length], style: const TextStyle(fontSize: 12)),
-                    ],
+                        const SizedBox(height: 10),
+                        Text(
+                          categories[index],
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 );
               },
@@ -269,25 +386,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildOtherScreen(int index, String userType) {
-    final auth = context.watch<AuthProvider>();
-    if (!auth.isAuthenticated) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.lock_outline, size: 64, color: Colors.grey),
-            const SizedBox(height: 16),
-            const Text('Please sign in to view this page'),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const LoginScreen()),
-              ),
-              child: const Text('Sign In'),
-            ),
-          ],
-        ),
-      );
+    if (!context.watch<AuthProvider>().isAuthenticated) {
+      return _buildAuthPlaceholder();
     }
 
     if (index == 1) {
@@ -298,6 +398,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
       if (userType == 'admin') return const AdminProfileScreen();
       return userType == 'applicant' ? const ApplicantProfileScreen() : const RecruiterProfileScreen();
     }
+  }
+
+  Widget _buildAuthPlaceholder() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.lock_outline, size: 64, color: Colors.grey),
+          const SizedBox(height: 16),
+          const Text('Please sign in to view this page'),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const LoginScreen()),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF673AB7),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Sign In'),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildSortAndFoundRow() {
@@ -393,9 +517,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
         }
 
         final size = MediaQuery.of(context).size;
-        int crossAxisCount = 1;
-        if (size.width > 1100) {
+        final bool isDesktop = size.width > 900;
+        
+        // Grid Configuration
+        // Mobile: 2 columns (Compact tiles)
+        // Mid-sized: 2 columns (Larger cards)
+        // XL-Desktop: 3 columns (Information dense)
+        int crossAxisCount = 2; // Default to 2 for mobile
+        if (size.width > 1200) {
+          crossAxisCount = 3;
+        } else if (size.width < 500) {
+          // Standard phone
           crossAxisCount = 2;
+        }
+
+        // Child Aspect Ratio logic to avoid overflows
+        // In 2-col mode, cards are narrow and need to be taller (Portrait)
+        // Ratio = Width / Height. If height > width, ratio < 1.0
+        double childAspectRatio = 0.8; // Standard portrait card ratio
+        if (isDesktop) {
+          childAspectRatio = crossAxisCount == 3 ? 1.4 : 1.6;
+        } else {
+          // Mobile fine-tuning
+          // On mobile, if we have 2 columns, width per card is ~180-200px
+          // To fit content, height should be ~280-320px
+          childAspectRatio = (size.width / crossAxisCount) / 320; 
         }
 
         return GridView.builder(
@@ -403,9 +549,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
           physics: const NeverScrollableScrollPhysics(),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: crossAxisCount,
-            crossAxisSpacing: 24,
-            mainAxisSpacing: 24,
-            childAspectRatio: size.width > 900 ? 2.0 : 1.0,
+            crossAxisSpacing: 16, // tighter for 2-col
+            mainAxisSpacing: 16,
+            childAspectRatio: childAspectRatio,
           ),
           itemCount: provider.jobs.length,
           itemBuilder: (context, index) {

@@ -22,6 +22,7 @@ class JobPost {
   final String accommodation;
   final String meals;
   final String category;
+  final DateTime createdAt;
 
   JobPost({
     required this.id,
@@ -31,6 +32,7 @@ class JobPost {
     required this.location,
     required this.salary,
     required this.isApproved,
+    required this.createdAt,
     this.image,
     this.workingTime = '',
     this.workingDays = '',
@@ -53,6 +55,7 @@ class JobPost {
       location: json['location'] ?? '',
       salary: json['salary'] ?? '',
       isApproved: json['is_approved'] ?? false,
+      createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : DateTime.now(),
       image: json['image'],
       workingTime: json['working_time'] ?? '',
       workingDays: json['working_days'] ?? '',

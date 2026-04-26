@@ -45,8 +45,8 @@ class _ApplicantProfileScreenState extends State<ApplicantProfileScreen> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('Profile saved')));
-        Navigator.of(context).pop();
+        ).showSnackBar(const SnackBar(content: Text('Profile saved successfully')));
+        // Removed Navigator.of(context).pop(); as this screen is often embedded in a tab
       }
     } else {
       if (mounted) {
@@ -80,55 +80,129 @@ class _ApplicantProfileScreenState extends State<ApplicantProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Applicant Profile')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                TextFormField(
-                  controller: _phone,
-                  decoration: const InputDecoration(labelText: 'Phone'),
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _bio,
-                  decoration: const InputDecoration(labelText: 'Bio'),
-                  maxLines: 3,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _skills,
-                  decoration: const InputDecoration(labelText: 'Skills'),
-                ),
-                const SizedBox(height: 12),
-                Row(
+      backgroundColor: Colors.grey[50],
+      appBar: AppBar(
+        title: const Text('Applicant Profile'),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black87,
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            children: [
+              const CircleAvatar(
+                radius: 40,
+                backgroundColor: Color(0xFFE8EAF6),
+                child: Icon(Icons.person, size: 40, color: Color(0xFF1A237E)),
+              ),
+              const SizedBox(height: 24),
+              Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    ElevatedButton(
-                      onPressed: _pickResume,
-                      child: const Text('Upload Resume'),
+                    _buildReadOnlyField('Username', context.watch<AuthProvider>().userData?['username'] ?? ''),
+                    const SizedBox(height: 16),
+                    _buildReadOnlyField('Email', context.watch<AuthProvider>().userData?['email'] ?? ''),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _phone,
+                      decoration: const InputDecoration(
+                        labelText: 'Phone',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.phone),
+                      ),
+                      validator: (v) => v!.isEmpty ? 'Required' : null,
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(child: Text(_resumeFile?.name ?? 'No file selected')),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _bio,
+                      decoration: const InputDecoration(
+                        labelText: 'Bio',
+                        border: OutlineInputBorder(),
+                        alignLabelWithHint: true,
+                        prefixIcon: Icon(Icons.info_outline),
+                      ),
+                      maxLines: 4,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _skills,
+                      decoration: const InputDecoration(
+                        labelText: 'Skills',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.code),
+                        hintText: 'e.g. Flutter, Python, SQL',
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey[300]!),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          ElevatedButton.icon(
+                            onPressed: _pickResume,
+                            icon: const Icon(Icons.upload_file),
+                            label: const Text('Resume'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.grey[200],
+                              foregroundColor: Colors.black87,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              _resumeFile?.name ?? 'No file selected',
+                              style: TextStyle(color: Colors.grey[600]),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    Consumer<AuthProvider>(
+                      builder: (context, auth, _) {
+                        return auth.isLoading
+                            ? const Center(child: CircularProgressIndicator())
+                            : ElevatedButton(
+                                onPressed: _save,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF1A237E),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                ),
+                                child: const Text('Save Profile', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                              );
+                      },
+                    ),
                   ],
                 ),
-                const SizedBox(height: 20),
-                Consumer<AuthProvider>(
-                  builder: (context, auth, _) {
-                    return auth.isLoading
-                        ? const CircularProgressIndicator()
-                        : ElevatedButton(
-                            onPressed: _save,
-                            child: const Text('Save'),
-                          );
-                  },
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildReadOnlyField(String label, String value) {
+    return TextFormField(
+      initialValue: value,
+      readOnly: true,
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
+        filled: true,
+        fillColor: Colors.grey[100],
+        prefixIcon: Icon(label == 'Email' ? Icons.email : Icons.person_outline),
       ),
     );
   }

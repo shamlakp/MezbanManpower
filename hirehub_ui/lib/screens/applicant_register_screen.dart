@@ -32,8 +32,17 @@ class _ApplicantRegisterScreenState extends State<ApplicantRegisterScreen> {
       final success = await auth.sendOTP(email);
       if (success && mounted) {
         setState(() => _otpSent = true);
+        
+        final msg = auth.lastOtp != null 
+            ? 'OTP generated: ${auth.lastOtp}' 
+            : 'OTP sent to your email!';
+
+        if (auth.lastOtp != null) {
+          _otpController.text = auth.lastOtp!;
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('OTP sent to your email!')),
+          SnackBar(content: Text(msg)),
         );
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

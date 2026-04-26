@@ -26,6 +26,7 @@ class ApiService {
   late final Dio _dio;
   String? _token;
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
+  VoidCallback? onUnauthorized;
 
   ApiService._internal() {
     _dio = Dio(
@@ -37,7 +38,6 @@ class ApiService {
       ),
     );
 
-    // Add interceptor to include token in requests
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
@@ -66,28 +66,34 @@ class ApiService {
           }
           return handler.next(options);
         },
-        
         onResponse: (response, handler) {
           if (kDebugMode) {
             debugPrint('API Response: ${response.statusCode} ${response.requestOptions.path}');
           }
           return handler.next(response);
         },
-
-        onError: (error, handler) async {
+        onError: (DioException error, handler) async {
+          final isLogout = error.requestOptions.path.contains('/api/logout/');
+          
           if (kDebugMode) {
             debugPrint(
               'API Error: ${error.response?.statusCode} ${error.requestOptions.path}',
             );
             debugPrint('Error data: ${error.response?.data}');
-            debugPrint('Error message: ${error.message}');
-            debugPrint('Error type: ${error.type}');
-            debugPrint('Underlying error: ${error.error}');
           }
-          if (error.response?.statusCode == 401) {
-            // Token expired or invalid
+
+          if (error.response?.statusCode == 401 && !isLogout) {
+            // Global handle 401 Unauthorized
+            if (kDebugMode) {
+              debugPrint('401 Unauthorized received, user logged out.');
+            }
+            // Clear token and local data
             await clearToken();
+            if (onUnauthorized != null) {
+              onUnauthorized!();
+            }
           }
+          
           return handler.next(error);
         },
       ),
@@ -121,6 +127,9 @@ class ApiService {
       // Handle error
     }
   }
+
+  /// Logout user - clear token and user data
+  Future<void> logout() => clearToken();
 
   /// Clear token and user data
   Future<void> clearToken() async {
@@ -190,6 +199,19 @@ class ApiService {
       return response;
     } catch (e) {
       _logError('Login', e);
+      rethrow;
+    }
+  }
+
+  Future<Response> getMe() async {
+    try {
+      final response = await _dio.get('/adminpanel/api/user/me/');
+      if (response.statusCode == 200) {
+        await saveUserData(response.data);
+      }
+      return response;
+    } catch (e) {
+      _logError('getMe', e);
       rethrow;
     }
   }

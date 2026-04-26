@@ -9,23 +9,65 @@ class AuthProvider with ChangeNotifier {
   String? _errorMessage;
   bool _isAuthenticated = false;
   Map<String, dynamic>? _userData;
+  String? _lastOtp; // To handle Test Mode OTP return
+
+  AuthProvider() {
+    _apiService.onUnauthorized = () {
+      _isAuthenticated = false;
+      _userData = null;
+      notifyListeners();
+    };
+  }
 
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   bool get isAuthenticated => _isAuthenticated;
   Map<String, dynamic>? get userData => _userData;
+  String? get lastOtp => _lastOtp;
 
   /// Initialize auth on app startup - load token if exists
   Future<void> initializeAuth() async {
     try {
       await _apiService.loadToken();
-      if (_apiService.getToken() != null) {
-        // load persisted user data if available
-        final stored = await _apiService.loadUserData();
-        if (stored != null) {
-          _userData = stored;
+      final token = _apiService.getToken();
+      
+      if (token != null) {
+        // try to refresh user data from server
+        try {
+          final meResponse = await _apiService.getMe();
+          if (meResponse.statusCode == 200) {
+            _userData = meResponse.data;
+            _isAuthenticated = true;
+          }
+        } on DioException catch (e) {
+          if (e.response?.statusCode == 401) {
+            // Token is invalid/expired
+            await _apiService.logout();
+            _userData = null;
+            _isAuthenticated = false;
+          } else {
+            // Other server error (e.g. timeout), fallback to stored data
+            final stored = await _apiService.loadUserData();
+            if (stored != null) {
+              _userData = stored;
+              _isAuthenticated = true;
+            } else {
+              _isAuthenticated = false;
+            }
+          }
+        } catch (e) {
+          // Fallback for non-Dio errors
+          final stored = await _apiService.loadUserData();
+          if (stored != null) {
+            _userData = stored;
+            _isAuthenticated = true;
+          } else {
+            _isAuthenticated = false;
+          }
         }
-        _isAuthenticated = true;
+        notifyListeners();
+      } else {
+        _isAuthenticated = false;
         notifyListeners();
       }
     } catch (e) {
@@ -73,8 +115,7 @@ class AuthProvider with ChangeNotifier {
     try {
       _isLoading = true;
       notifyListeners();
-
-      await _apiService.clearToken();
+      await _apiService.logout();
       _isAuthenticated = false;
       _userData = null;
       _errorMessage = null;
@@ -97,6 +138,12 @@ class AuthProvider with ChangeNotifier {
     try {
       final response = await _apiService.sendOTP(email);
       if (response.statusCode == 200) {
+        final data = response.data;
+        if (data is Map && data.containsKey('otp')) {
+          _lastOtp = data['otp'].toString();
+        } else {
+          _lastOtp = null;
+        }
         _isLoading = false;
         notifyListeners();
         return true;
@@ -216,6 +263,8 @@ class AuthProvider with ChangeNotifier {
         resumeFile,
       );
       if (response.statusCode == 200) {
+        // Force refresh of the user state to sync the dashboard
+        await initializeAuth();
         _isLoading = false;
         notifyListeners();
         return true;
@@ -314,6 +363,11 @@ class AuthProvider with ChangeNotifier {
     if (error is DioException) {
       final data = error.response?.data;
       if (data != null) {
+        // Prevent showing raw HTML (like <!DOCTYPE) in the UI
+        if (data is String && (data.toLowerCase().contains('<!doctype') || data.toLowerCase().contains('<html'))) {
+          return 'Server Error: The request failed on the host. Check server logs or migrations.';
+        }
+
         if (data is Map) {
           if (data.containsKey('error')) return data['error'].toString();
           if (data.containsKey('detail')) return data['detail'].toString();
@@ -327,7 +381,6 @@ class AuthProvider with ChangeNotifier {
             } else {
               msg = value.toString();
             }
-            // Capitalize key for readability
             final keyName = key.substring(0, 1).toUpperCase() + key.substring(1);
             errorMessages.add('$keyName: $msg');
           });
@@ -338,7 +391,13 @@ class AuthProvider with ChangeNotifier {
         }
         return 'Request failed: $data';
       }
-      return error.message ?? 'Unknown connection error';
+      
+      final String? message = error.message;
+      if (message != null && message.contains('XMLHttpRequest error')) {
+        return 'Network Error: Cannot connect to server (CORS or server down).';
+      }
+      
+      return message ?? 'Unknown connection error';
     }
     return error.toString();
   }

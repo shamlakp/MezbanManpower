@@ -31,124 +31,167 @@ class JobGridCard extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final bool isCompact = constraints.maxWidth < 250;
+              return Padding(
+                padding: const EdgeInsets.all(12.0), // slightly tighter
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Small Image/Logo
-                    Container(
-                      width: 70,
-                      height: 70,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey[200]!),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: (job.image != null && job.image!.isNotEmpty)
-                            ? Image.network(
-                                _getImageUrl(job.image!),
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Center(
-                                    child: Icon(Icons.business, size: 30, color: Colors.grey[400]),
-                                  );
-                                },
-                              )
-                            : Center(
-                                child: Icon(
-                                  Icons.business,
-                                  size: 30,
-                                  color: Colors.grey[400],
-                                ),
-                              ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    // Title and Company
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            job.position,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+                    // Layout change based on width
+                    if (isCompact) ...[
+                      // Compact Portrait Mode
+                      _buildCompactCardHeader(job),
+                    ] else ...[
+                      // Desktop/Wide Mode
+                      _buildWideCardHeader(job),
+                    ],
+                    
+                    const SizedBox(height: 12),
+                    _buildCardDetails(job),
+                    
+                    const Spacer(),
+                    const Divider(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            '${DateTime.now().difference(job.createdAt).inDays}d ago',
+                            style: TextStyle(color: Colors.grey[500], fontSize: 10),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            job.companyName,
-                            style: TextStyle(color: Colors.grey[600], fontSize: 13),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
+                        ),
+                        _buildViewButton(onTap),
+                      ],
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
-                // Location
-                Row(
-                  children: [
-                    Icon(Icons.location_on_outlined, size: 14, color: Colors.grey[600]),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Text(
-                        job.location,
-                        style: TextStyle(color: Colors.grey[700], fontSize: 12),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                // Salary
-                Row(
-                  children: [
-                    Icon(Icons.payments_outlined, size: 14, color: Colors.green[700]),
-                    const SizedBox(width: 4),
-                    Text(
-                      '\$${job.salary}',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.green[800],
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    onPressed: onTap,
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFF0D47A1),
-                      side: const BorderSide(color: Color(0xFF0D47A1)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                    ),
-                    child: const Text('View Details'),
-                  ),
-                ),
-              ],
-            ),
+              );
+            },
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildCompactCardHeader(JobPost job) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            color: Colors.grey[100],
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: _buildJobImage(job),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          job.position,
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+        Text(
+          job.companyName,
+          style: TextStyle(color: Colors.grey[600], fontSize: 12),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildWideCardHeader(JobPost job) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 70,
+          height: 70,
+          decoration: BoxDecoration(
+            color: Colors.grey[100],
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: _buildJobImage(job),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                job.position,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              Text(
+                job.companyName,
+                style: TextStyle(color: Colors.grey[600], fontSize: 13),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCardDetails(JobPost job) {
+    return Column(
+      children: [
+        _buildInfoRow(Icons.location_on_outlined, job.location, Colors.grey[700]!),
+        const SizedBox(height: 4),
+        _buildInfoRow(Icons.payments_outlined, '\$${job.salary}', Colors.green[800]!),
+      ],
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String text, Color color) {
+    return Row(
+      children: [
+        Icon(icon, size: 14, color: color.withValues(alpha: 0.7)),
+        const SizedBox(width: 4),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w500),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildViewButton(VoidCallback? onTap) {
+    return ElevatedButton(
+      onPressed: onTap,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xFF673AB7),
+        foregroundColor: Colors.white,
+        elevation: 0,
+        minimumSize: Size.zero,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+      child: const Text('View', style: TextStyle(fontSize: 11)),
+    );
+  }
+
+  Widget _buildJobImage(JobPost job) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: (job.image != null && job.image!.isNotEmpty)
+          ? Image.network(
+              _getImageUrl(job.image!),
+              fit: BoxFit.cover,
+              errorBuilder: (c, e, s) => Icon(Icons.business, size: 24, color: Colors.grey[400]),
+            )
+          : Icon(Icons.business, size: 24, color: Colors.grey[400]),
     );
   }
 
