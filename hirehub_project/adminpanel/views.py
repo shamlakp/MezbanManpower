@@ -230,26 +230,13 @@ class SendOTPAPI(APIView):
                     'is_test': True
                 }, status=status.HTTP_200_OK)
 
-            try:
-                send_mail(
-                    subject='MEZBAN MANPOWER Registration OTP',
-                    message=f'Your verification code is: {otp_obj.otp}\nThis code will expire in 10 minutes.',
-                    from_email=getattr(settings, 'EMAIL_HOST_USER', 'noreply@mezbanmanpower.com'),
-                    recipient_list=[email],
-                    fail_silently=False, 
-                )
-                logger.info(f"OTP successfully sent to {email}")
-            except Exception as e:
-                logger.error(f"Failed to send OTP email to {email}: {str(e)}")
-                # If email fails, return 200 but inform that email failed
-                # This prevents a total registration block
-                return Response({
-                    'message': 'OTP generated but email skipped (SMTP Error). Contact support.',
-                    'otp': otp_obj.otp if settings.DEBUG else None, # Give code manually if in debug mode
-                    'contact_support': True
-                }, status=status.HTTP_200_OK)
-
-            return Response({'message': 'OTP sent successfully to your email.'}, status=status.HTTP_200_OK)
+            # Bypass SMTP for free hosting tier and return the OTP directly
+            logger.info(f"Free Tier Mode: Skipping email to {email}, code is {otp_obj.otp}")
+            return Response({
+                'message': 'OTP generated successfully. Auto-filling for testing/free tier.',
+                'otp': otp_obj.otp,
+                'is_test': True
+            }, status=status.HTTP_200_OK)
             
         except Exception as e:
             logger.error(f"Database error in SendOTPAPI for {email}: {str(e)}")
