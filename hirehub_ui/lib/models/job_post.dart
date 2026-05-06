@@ -48,10 +48,10 @@ class JobPost {
 
   factory JobPost.fromJson(Map<String, dynamic> json) {
     return JobPost(
-      id: json['id'],
-      position: json['position'],
+      id: json['id'] ?? 0,
+      position: json['position'] ?? 'No Position',
       companyName: json['company_name'] ?? 'Unknown Company',
-      noOfVacancies: json['no_of_vacancies'],
+      noOfVacancies: json['no_of_vacancies'] ?? 0,
       location: json['location'] ?? '',
       salary: json['salary'] ?? '',
       isApproved: json['is_approved'] ?? false,

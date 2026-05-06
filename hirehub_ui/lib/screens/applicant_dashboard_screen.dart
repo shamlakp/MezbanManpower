@@ -10,6 +10,8 @@ import 'applicant_applications_screen.dart';
 import 'dashboard_screen.dart';
 import 'login_screen.dart';
 
+import '../utils/location_helper.dart';
+
 class ApplicantDashboardScreen extends StatefulWidget {
   final bool showAppBar;
   final VoidCallback? onBrowseJobs;
@@ -40,15 +42,11 @@ class _ApplicantDashboardScreenState extends State<ApplicantDashboardScreen> {
 
   Future<void> _fetchLocation() async {
     try {
-      final dio = Dio();
-      final response = await dio.get('https://ipapi.co/json/');
-      if (response.statusCode == 200) {
-        final data = response.data;
-        if (mounted) {
-          setState(() {
-            _currentLocation = "${data['city']}, ${data['country_name']}";
-          });
-        }
+      final location = await LocationHelper.getExactLocation();
+      if (mounted) {
+        setState(() {
+          _currentLocation = location;
+        });
       }
     } catch (e) {
       if (mounted) {
@@ -191,11 +189,11 @@ class _ApplicantDashboardScreenState extends State<ApplicantDashboardScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Hello, $fullName 👋',
+                              'Hello, $fullName',
                               style: const TextStyle(
                                 fontSize: 26,
                                 fontWeight: FontWeight.w800,
-                                color: Color(0xFF1A237E),
+                                color: Color(0xFF2D3748),
                                 letterSpacing: -0.5,
                               ),
                             ),
@@ -252,6 +250,8 @@ class _ApplicantDashboardScreenState extends State<ApplicantDashboardScreen> {
                     ),
                   const SizedBox(height: 24),
                   _buildQuickActions(),
+                  const SizedBox(height: 32),
+                  _buildBottomLogoutButton(),
                 ],
               ),
             ),
@@ -263,7 +263,7 @@ class _ApplicantDashboardScreenState extends State<ApplicantDashboardScreen> {
       backgroundColor: const Color(0xFFF8F9FE),
       appBar: widget.showAppBar ? AppBar(
         title: const Text(
-          'HireHub', 
+          'MezbanManpower', 
           style: TextStyle(
             fontWeight: FontWeight.w900, 
             color: Color(0xFF1A237E),
@@ -272,13 +272,8 @@ class _ApplicantDashboardScreenState extends State<ApplicantDashboardScreen> {
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout_rounded, color: Colors.redAccent, size: 22),
-            onPressed: _logout,
-            tooltip: 'Logout',
-          ),
-          const SizedBox(width: 8),
+        actions: const [
+          SizedBox(width: 8),
         ],
       ) : null,
       body: body,
@@ -289,30 +284,27 @@ class _ApplicantDashboardScreenState extends State<ApplicantDashboardScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [const Color(0xFF1A237E), const Color(0xFF3949AB)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(24),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey.withValues(alpha: 0.15)),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF1A237E).withValues(alpha: 0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildCompactStatItem('Total', _stats['total'].toString(), Icons.assignment_outlined),
+          _buildCompactStatItem('Total', _stats['total'].toString(), Icons.assignment_outlined, const Color(0xFF4C51BF)),
           _buildVerticalDivider(),
-          _buildCompactStatItem('Pending', _stats['pending'].toString(), Icons.timer_outlined),
+          _buildCompactStatItem('Pending', _stats['pending'].toString(), Icons.timer_outlined, const Color(0xFFD69E2E)),
           _buildVerticalDivider(),
-          _buildCompactStatItem('Shortlisted', _stats['shortlisted'].toString(), Icons.verified_outlined),
+          _buildCompactStatItem('Shortlisted', _stats['shortlisted'].toString(), Icons.verified_outlined, const Color(0xFF38A169)),
           _buildVerticalDivider(),
-          _buildCompactStatItem('Rejected', _stats['rejected'].toString(), Icons.cancel_outlined),
+          _buildCompactStatItem('Rejected', _stats['rejected'].toString(), Icons.cancel_outlined, const Color(0xFFE53E3E)),
         ],
       ),
     );
@@ -320,32 +312,40 @@ class _ApplicantDashboardScreenState extends State<ApplicantDashboardScreen> {
 
   Widget _buildVerticalDivider() {
     return Container(
-      height: 30,
+      height: 40,
       width: 1,
-      color: Colors.white.withValues(alpha: 0.2),
+      color: Colors.grey.withValues(alpha: 0.2),
     );
   }
 
-  Widget _buildCompactStatItem(String label, String count, IconData icon) {
+  Widget _buildCompactStatItem(String label, String count, IconData icon, Color color) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, color: Colors.white70, size: 20),
-        const SizedBox(height: 4),
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: color, size: 20),
+        ),
+        const SizedBox(height: 8),
         Text(
           count,
           style: const TextStyle(
-            color: Colors.white,
-            fontSize: 20,
+            color: Color(0xFF2D3748),
+            fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
         ),
+        const SizedBox(height: 2),
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.7),
+            color: Colors.grey,
             fontSize: 11,
-            letterSpacing: 0.5,
+            fontWeight: FontWeight.w500,
           ),
         ),
       ],
@@ -467,73 +467,46 @@ class _ApplicantDashboardScreenState extends State<ApplicantDashboardScreen> {
       children: [
         const Text(
           'Quick Actions',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2D3748)),
         ),
         const SizedBox(height: 16),
         Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            Expanded(
-              child: Stack(
-                children: [
-                  _buildActionCard(
-                    'Browse Jobs', 
-                    Icons.search, 
-                    Colors.indigo,
-                    () {
-                      // Reset notification count when browsing jobs
-                      SharedPreferences.getInstance().then((prefs) {
-                        ApiService().getJobs().then((resp) {
-                          if (resp.statusCode == 200) {
-                            prefs.setInt('last_seen_job_count', (resp.data as List).length);
-                          }
-                        });
-                      });
-                      
-                      if (widget.onBrowseJobs != null) {
-                        widget.onBrowseJobs!();
-                      } else {
-                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const DashboardScreen()));
-                      }
-                    },
-                  ),
-                  if (_notificationCount > 0)
-                    Positioned(
-                      right: 12,
-                      top: 12,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.redAccent,
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.redAccent.withValues(alpha: 0.2),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Text(
-                          '$_notificationCount NEW',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 9,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
+            _buildSmallActionIcon(
+              'Jobs', 
+              Icons.work_outline, 
+              const Color(0xFF4C51BF),
+              () {
+                SharedPreferences.getInstance().then((prefs) {
+                  ApiService().getJobs().then((resp) {
+                    if (resp.statusCode == 200) {
+                      prefs.setInt('last_seen_job_count', (resp.data as List).length);
+                    }
+                  });
+                });
+                
+                if (widget.onBrowseJobs != null) {
+                  widget.onBrowseJobs!();
+                } else {
+                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const DashboardScreen()));
+                }
+              },
+              badgeCount: _notificationCount,
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: _buildActionCard(
-                'Edit Profile', 
-                Icons.person_outline, 
-                Colors.deepPurple,
-                () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ApplicantProfileScreen())),
-              ),
+            _buildSmallActionIcon(
+              'Profile', 
+              Icons.person_outline, 
+              const Color(0xFF38A169),
+              () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ApplicantProfileScreen())),
+            ),
+            _buildSmallActionIcon(
+              'Settings', 
+              Icons.settings_outlined, 
+              const Color(0xFFD69E2E),
+              () {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Settings coming soon')));
+              },
             ),
           ],
         ),
@@ -541,44 +514,80 @@ class _ApplicantDashboardScreenState extends State<ApplicantDashboardScreen> {
     );
   }
 
-  Widget _buildActionCard(String label, IconData icon, Color color, VoidCallback onTap) {
+  Widget _buildSmallActionIcon(String label, IconData icon, Color color, VoidCallback onTap, {int badgeCount = 0}) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(24),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 24),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: color.withValues(alpha: 0.15)),
-          boxShadow: [
-            BoxShadow(
-              color: color.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
+      borderRadius: BorderRadius.circular(16),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         child: Column(
           children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: color, size: 28),
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icon, color: color, size: 28),
+                ),
+                if (badgeCount > 0)
+                  Positioned(
+                    right: -4,
+                    top: -4,
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: const BoxDecoration(
+                        color: Colors.redAccent,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Text(
+                        badgeCount.toString(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             Text(
               label,
               style: TextStyle(
-                color: color.withValues(alpha: 0.8),
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.3,
+                color: Colors.grey[800],
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomLogoutButton() {
+    return Center(
+      child: TextButton.icon(
+        onPressed: _logout,
+        icon: const Icon(Icons.logout_rounded, color: Colors.grey, size: 20),
+        label: const Text(
+          'Log Out',
+          style: TextStyle(
+            color: Colors.grey,
+            fontWeight: FontWeight.w600,
+            fontSize: 15,
+          ),
+        ),
+        style: TextButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       ),
     );

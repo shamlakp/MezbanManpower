@@ -56,7 +56,7 @@ class JobDetailScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(16),
                       child: (job.image != null && job.image!.isNotEmpty)
                           ? Image.network(
-                              _getImageUrl(job.image!),
+                              UrlHelper.resolveMediaUrl(job.image!),
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) =>
                                   const Icon(Icons.business, size: 40, color: Colors.grey),
@@ -246,11 +246,5 @@ class JobDetailScreen extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  String _getImageUrl(String imagePath) {
-    if (imagePath.startsWith('http')) return imagePath;
-    final path = imagePath.startsWith('/') ? imagePath : '/$imagePath';
-    return '${UrlHelper.getBaseUrl()}$path';
   }
 }

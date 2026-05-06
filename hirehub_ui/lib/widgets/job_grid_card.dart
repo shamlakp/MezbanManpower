@@ -35,7 +35,7 @@ class JobGridCard extends StatelessWidget {
             builder: (context, constraints) {
               final bool isCompact = constraints.maxWidth < 250;
               return Padding(
-                padding: const EdgeInsets.all(12.0), // slightly tighter
+                padding: const EdgeInsets.all(10.0), // Tighter padding for 175px height
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -48,11 +48,10 @@ class JobGridCard extends StatelessWidget {
                       _buildWideCardHeader(job),
                     ],
                     
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
                     _buildCardDetails(job),
                     
-                    const Spacer(),
-                    const Divider(height: 12),
+                    const SizedBox(height: 12),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -80,19 +79,19 @@ class JobGridCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          width: 50,
-          height: 50,
+          width: 40,
+          height: 40,
           decoration: BoxDecoration(
             color: Colors.grey[100],
             borderRadius: BorderRadius.circular(10),
           ),
           child: _buildJobImage(job),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         Text(
           job.position,
           style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-          maxLines: 2,
+          maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
         Text(
@@ -110,8 +109,8 @@ class JobGridCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          width: 70,
-          height: 70,
+          width: 50,
+          height: 50,
           decoration: BoxDecoration(
             color: Colors.grey[100],
             borderRadius: BorderRadius.circular(12),
@@ -125,13 +124,15 @@ class JobGridCard extends StatelessWidget {
             children: [
               Text(
                 job.position,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                maxLines: 2,
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
               Text(
                 job.companyName,
-                style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
@@ -187,22 +188,11 @@ class JobGridCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(10),
       child: (job.image != null && job.image!.isNotEmpty)
           ? Image.network(
-              _getImageUrl(job.image!),
+              UrlHelper.resolveMediaUrl(job.image!),
               fit: BoxFit.cover,
               errorBuilder: (c, e, s) => Icon(Icons.business, size: 24, color: Colors.grey[400]),
             )
           : Icon(Icons.business, size: 24, color: Colors.grey[400]),
     );
-  }
-
-  String _getImageUrl(String imagePath) {
-    if (imagePath.startsWith('http')) {
-      return imagePath;
-    }
-    // Ensure the path starts with /
-    final path = imagePath.startsWith('/') ? imagePath : '/$imagePath';
-    final url = '${UrlHelper.getBaseUrl()}$path';
-    debugPrint('Constructed image URL: $url');
-    return url;
   }
 }

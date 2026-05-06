@@ -21,6 +21,10 @@ import 'applicant_dashboard_screen.dart';
 import 'admin_profile_screen.dart';
 import 'create_job_screen.dart';
 
+import '../utils/location_helper.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:icons_plus/icons_plus.dart';
+
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
@@ -48,16 +52,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> _fetchLocation() async {
     try {
-      final dio = Dio();
-      final response = await dio.get('https://ipapi.co/json/');
-      if (response.statusCode == 200) {
-        final data = response.data;
+      final location = await LocationHelper.getExactLocation();
+      if (mounted) {
         setState(() {
-          _currentLocation = "${data['city']}, ${data['country_name']}";
+          _currentLocation = location;
         });
       }
     } catch (e) {
-      setState(() { _currentLocation = 'Location Unavailable'; });
+      if (mounted) {
+        setState(() { _currentLocation = 'Location Unavailable'; });
+      }
     }
   }
 
@@ -155,8 +159,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         centerTitle: false,
         title: Row(
           children: [
-            const Icon(Icons.location_on_rounded, color: Color(0xFF673AB7), size: 20),
-            const SizedBox(width: 4),
+            const Icon(Bootstrap.geo_alt_fill, color: Color(0xFF673AB7), size: 18),
+            const SizedBox(width: 6),
             Expanded(
               child: Text(
                 _currentLocation,
@@ -170,14 +174,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
           IconButton(
             icon: Badge(
               label: Text('$_notificationCount', style: const TextStyle(color: Colors.white, fontSize: 10)),
-              child: const Icon(Icons.notifications_outlined, color: Color(0xFF673AB7)),
+              child: const Icon(Bootstrap.bell, color: Color(0xFF673AB7)),
             ),
             onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout_rounded, color: Colors.redAccent),
-            onPressed: _logout,
-            tooltip: 'Logout',
           ),
           const SizedBox(width: 8),
         ],
@@ -189,7 +188,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
       body: _buildBody(userType, isDesktop, isApplicant),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
+        onTap: (index) {
+          setState(() => _currentIndex = index);
+          if ((isApplicant && index == 1) || (!isApplicant && index == 0)) {
+            _clearJobNotifications();
+          }
+        },
         selectedItemColor: const Color(0xFF673AB7),
         unselectedItemColor: Colors.grey,
         showSelectedLabels: true,
@@ -197,14 +201,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
         type: BottomNavigationBarType.fixed,
         items: isApplicant 
           ? const [
-              BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Profile'),
-              BottomNavigationBarItem(icon: Icon(Icons.search), activeIcon: Icon(Icons.search), label: 'Jobs'),
-              BottomNavigationBarItem(icon: Icon(Icons.assignment_outlined), activeIcon: Icon(Icons.assignment), label: 'Applications'),
+              BottomNavigationBarItem(icon: Icon(Bootstrap.person), activeIcon: Icon(Bootstrap.person_fill), label: 'Profile'),
+              BottomNavigationBarItem(icon: Icon(Bootstrap.search), activeIcon: Icon(Bootstrap.search), label: 'Jobs'),
+              BottomNavigationBarItem(icon: Icon(Bootstrap.briefcase), activeIcon: Icon(Bootstrap.briefcase_fill), label: 'Applications'),
             ]
           : const [
-              BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Home'),
-              BottomNavigationBarItem(icon: Icon(Icons.assignment_outlined), label: 'Applications'),
-              BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profile'),
+              BottomNavigationBarItem(icon: Icon(Bootstrap.house), activeIcon: Icon(Bootstrap.house_fill), label: 'Home'),
+              BottomNavigationBarItem(icon: Icon(Bootstrap.briefcase), activeIcon: Icon(Bootstrap.briefcase_fill), label: 'Applications'),
+              BottomNavigationBarItem(icon: Icon(Bootstrap.person), activeIcon: Icon(Bootstrap.person_fill), label: 'Profile'),
             ],
       ),
       floatingActionButton: userType == 'recruiter' && _currentIndex == 0
@@ -288,9 +292,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 8),
-              itemCount: 6,
+              itemCount: 10,
               itemBuilder: (context, index) {
-                final categories = ['IT', 'Design', 'Sales', 'Finance', 'HR', 'Support'];
+                final categories = ['IT', 'Design', 'Sales', 'Finance', 'HR', 'Support', 'Marketing', 'Engineering', 'Healthcare', 'Education'];
                 final imagePaths = [
                   'https://images.unsplash.com/photo-1518770660439-4636190af475?w=200&h=200&fit=crop', // IT
                   'https://images.unsplash.com/photo-1558655146-d09347e92766?w=200&h=200&fit=crop', // Design
@@ -298,6 +302,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=200&h=200&fit=crop', // Finance
                   'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=200&h=200&fit=crop', // HR
                   'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=200&h=200&fit=crop', // Support
+                  'https://images.unsplash.com/photo-1533750516457-a7f992034fec?w=200&h=200&fit=crop', // Marketing
+                  'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=200&h=200&fit=crop', // Engineering
+                  'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=200&h=200&fit=crop', // Healthcare
+                  'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=200&h=200&fit=crop', // Education
                 ];
                 return GestureDetector(
                   onTap: () {
@@ -434,7 +442,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Padding(
                 padding: const EdgeInsets.only(right: 8.0),
                 child: IconButton(
-                  icon: const Icon(Icons.filter_list, color: Color(0xFF673AB7)),
+                  icon: const Icon(Bootstrap.filter, color: Color(0xFF673AB7)),
                   onPressed: () => Scaffold.of(context).openEndDrawer(),
                   tooltip: 'Filter Jobs',
                 ),
@@ -531,28 +539,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
           crossAxisCount = 2;
         }
 
-        // Child Aspect Ratio logic to avoid overflows
-        // In 2-col mode, cards are narrow and need to be taller (Portrait)
-        // Ratio = Width / Height. If height > width, ratio < 1.0
-        double childAspectRatio = 0.8; // Standard portrait card ratio
-        if (isDesktop) {
-          childAspectRatio = crossAxisCount == 3 ? 1.4 : 1.6;
-        } else {
-          // Mobile fine-tuning
-          // On mobile, if we have 2 columns, width per card is ~180-200px
-          // To fit content, height should be ~280-320px
-          childAspectRatio = (size.width / crossAxisCount) / 320; 
-        }
-
-        return GridView.builder(
+        return MasonryGridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          gridDelegate: SliverSimpleGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: crossAxisCount,
-            crossAxisSpacing: 16, // tighter for 2-col
-            mainAxisSpacing: 16,
-            childAspectRatio: childAspectRatio,
           ),
+          mainAxisSpacing: 16,
+          crossAxisSpacing: 16,
           itemCount: provider.jobs.length,
           itemBuilder: (context, index) {
           return JobGridCard(

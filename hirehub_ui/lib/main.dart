@@ -37,6 +37,7 @@ class MezbanManpowerApp extends StatelessWidget {
       child: MaterialApp(
         title: 'MEZBAN MANPOWER',
         theme: ThemeData(
+          fontFamily: 'Inter',
           useMaterial3: true,
           colorScheme: ColorScheme.fromSeed(
             seedColor: const Color(0xFF673AB7),

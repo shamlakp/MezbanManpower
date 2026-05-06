@@ -23,20 +23,15 @@ class ApiService {
     '/api/applicant/register/',
   ];
 
-  late final Dio _dio;
+  final Dio _dio;
   String? _token;
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
   VoidCallback? onUnauthorized;
 
-  ApiService._internal() {
-    _dio = Dio(
-      BaseOptions(
-        // Use 10.0.2.2 for Android Emulator, 127.0.0.1 for others (Web/Desktop)
-        baseUrl: getBaseUrl(),
-        connectTimeout: const Duration(seconds: 5),
-        receiveTimeout: const Duration(seconds: 3),
-      ),
-    );
+  ApiService._internal() : _dio = Dio() {
+    _dio.options.baseUrl = getBaseUrl();
+    _dio.options.connectTimeout = const Duration(seconds: 5);
+    _dio.options.receiveTimeout = const Duration(seconds: 3);
 
     _dio.interceptors.add(
       InterceptorsWrapper(
