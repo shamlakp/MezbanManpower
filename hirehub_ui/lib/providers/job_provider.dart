@@ -87,7 +87,7 @@ class JobProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      final formDataMap = {
+      final formDataMap = <String, dynamic>{
         'position': data['position'],
         'no_of_vacancies': data['noOfVacancies'],
         'location': data['location'],
@@ -105,7 +105,7 @@ class JobProvider with ChangeNotifier {
         'company': data['company'], // Include company ID for multi-company support
       };
 
-      if (imagePath != null) {
+      if (imagePath != null && imagePath.isNotEmpty) {
         if (kIsWeb) {
           final XFile file = XFile(imagePath);
           final bytes = await file.readAsBytes();
@@ -114,12 +114,20 @@ class JobProvider with ChangeNotifier {
             filename: 'job_image.jpg',
           );
         } else {
-          formDataMap['image'] = await MultipartFile.fromFile(imagePath);
+          // Explicitly provide filename for mobile uploads
+          final String fileName = imagePath.split('/').last;
+          formDataMap['image'] = await MultipartFile.fromFile(
+            imagePath,
+            filename: fileName.contains('.') ? fileName : '$fileName.jpg',
+          );
         }
       }
 
       final formData = FormData.fromMap(formDataMap);
       await _apiService.createJobPost(formData);
+      
+      // Clear filters so the user can see their new job immediately on the homepage
+      clearSearch();
       
       await fetchJobs(); // Refresh the list
       return true;

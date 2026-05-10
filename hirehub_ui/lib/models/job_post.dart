@@ -1,6 +1,7 @@
 
 class JobPost {
   final int id;
+  final int companyId;
   final String position;
   final String companyName;
   final int noOfVacancies;
@@ -26,6 +27,7 @@ class JobPost {
 
   JobPost({
     required this.id,
+    required this.companyId,
     required this.position,
     required this.companyName,
     required this.noOfVacancies,
@@ -49,6 +51,7 @@ class JobPost {
   factory JobPost.fromJson(Map<String, dynamic> json) {
     return JobPost(
       id: json['id'] ?? 0,
+      companyId: json['company'] ?? 0,
       position: json['position'] ?? 'No Position',
       companyName: json['company_name'] ?? 'Unknown Company',
       noOfVacancies: json['no_of_vacancies'] ?? 0,

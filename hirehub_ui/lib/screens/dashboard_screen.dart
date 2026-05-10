@@ -15,6 +15,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'job_detail_screen.dart';
 import 'recruiter_profile_screen.dart';
 import 'recruiter_applications_screen.dart';
+import 'recruiter_dashboard_screen.dart';
 
 import 'applicant_applications_screen.dart';
 import 'applicant_dashboard_screen.dart';
@@ -123,7 +124,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         debugPrint('Logout error: $e');
       }
       navigator.pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
+        MaterialPageRoute(builder: (_) => const DashboardScreen()),
         (route) => false,
       );
     }
@@ -156,65 +157,127 @@ class _DashboardScreenState extends State<DashboardScreen> {
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.white,
         elevation: 0,
-        centerTitle: false,
-        title: Row(
-          children: [
-            const Icon(Bootstrap.geo_alt_fill, color: Color(0xFF673AB7), size: 18),
-            const SizedBox(width: 6),
-            Expanded(
-              child: Text(
-                _currentLocation,
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87),
-                overflow: TextOverflow.ellipsis,
+        toolbarHeight: 75,
+        leading: Builder(
+          builder: (context) => Padding(
+            padding: const EdgeInsets.only(left: 16.0),
+            child: GestureDetector(
+              onTap: () {
+                if (auth.isAuthenticated) {
+                  Scaffold.of(context).openDrawer();
+                } else {
+                  Navigator.of(context).push(MaterialPageRoute(builder: (_) => const LoginScreen()));
+                }
+                
+              },
+              child: CircleAvatar(
+                backgroundColor: const Color(0xFFEEF2FF),
+                child: auth.isAuthenticated 
+                  ? Text(
+                      username[0].toUpperCase(),
+                      style: const TextStyle(color: Color(0xFF6366F1), fontWeight: FontWeight.bold),
+                    )
+                  : const Icon(Icons.person_outline_rounded, color: Color(0xFF6366F1)),
               ),
             ),
-          ],
+          ),
+        ),
+        centerTitle: true,
+        title: GestureDetector(
+          onTap: _fetchLocation,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF1F5F9),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.location_on_rounded, color: Color(0xFF6366F1), size: 16),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    _currentLocation,
+                    style: const TextStyle(
+                      fontSize: 12, 
+                      fontWeight: FontWeight.w700, 
+                      color: Color(0xFF1E293B),
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF64748B), size: 14),
+              ],
+            ),
+          ),
         ),
         actions: [
-          IconButton(
-            icon: Badge(
-              label: Text('$_notificationCount', style: const TextStyle(color: Colors.white, fontSize: 10)),
-              child: const Icon(Bootstrap.bell, color: Color(0xFF673AB7)),
-            ),
-            onPressed: () {},
+          Stack(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.notifications_none_rounded, color: Color(0xFF1E293B), size: 28),
+                onPressed: () {},
+              ),
+              if (_notificationCount > 0)
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(color: Color(0xFFEF4444), shape: BoxShape.circle),
+                    constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                    child: Text(
+                      '$_notificationCount',
+                      style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
           ),
           const SizedBox(width: 8),
         ],
       ),
-      drawer: isDesktop ? null : _buildDrawer(context, username, userType),
+      drawer: _buildDrawer(context, username, userType),
       endDrawer: isDesktop ? null : const Drawer(
         child: SafeArea(child: FilterSidebar()),
       ),
       body: _buildBody(userType, isDesktop, isApplicant),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() => _currentIndex = index);
-          if ((isApplicant && index == 1) || (!isApplicant && index == 0)) {
-            _clearJobNotifications();
-          }
-        },
-        selectedItemColor: const Color(0xFF673AB7),
-        unselectedItemColor: Colors.grey,
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        type: BottomNavigationBarType.fixed,
-        items: isApplicant 
-          ? const [
-              BottomNavigationBarItem(icon: Icon(Bootstrap.person), activeIcon: Icon(Bootstrap.person_fill), label: 'Profile'),
-              BottomNavigationBarItem(icon: Icon(Bootstrap.search), activeIcon: Icon(Bootstrap.search), label: 'Jobs'),
-              BottomNavigationBarItem(icon: Icon(Bootstrap.briefcase), activeIcon: Icon(Bootstrap.briefcase_fill), label: 'Applications'),
-            ]
-          : const [
-              BottomNavigationBarItem(icon: Icon(Bootstrap.house), activeIcon: Icon(Bootstrap.house_fill), label: 'Home'),
-              BottomNavigationBarItem(icon: Icon(Bootstrap.briefcase), activeIcon: Icon(Bootstrap.briefcase_fill), label: 'Applications'),
-              BottomNavigationBarItem(icon: Icon(Bootstrap.person), activeIcon: Icon(Bootstrap.person_fill), label: 'Profile'),
-            ],
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))],
+        ),
+        child: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: (index) {
+            setState(() => _currentIndex = index);
+            if ((isApplicant && index == 0) || (!isApplicant && index == 0)) {
+              _clearJobNotifications();
+            }
+          },
+          selectedItemColor: const Color(0xFF6366F1),
+          unselectedItemColor: const Color(0xFF94A3B8),
+          showSelectedLabels: true,
+          showUnselectedLabels: true,
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: Colors.white,
+          elevation: 0,
+          items: isApplicant 
+            ? const [
+                BottomNavigationBarItem(icon: Icon(Icons.search_rounded), activeIcon: Icon(Icons.search_rounded), label: 'Explore'),
+                BottomNavigationBarItem(icon: Icon(Icons.description_outlined), activeIcon: Icon(Icons.description), label: 'Applications'),
+              ]
+            : const [
+                BottomNavigationBarItem(icon: Icon(Icons.dashboard_outlined), activeIcon: Icon(Icons.dashboard_rounded), label: 'Dashboard'),
+                BottomNavigationBarItem(icon: Icon(Icons.description_outlined), activeIcon: Icon(Icons.description), label: 'Applications'),
+              ],
+        ),
       ),
       floatingActionButton: userType == 'recruiter' && _currentIndex == 0
           ? FloatingActionButton(
               onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CreateJobScreen())),
-              backgroundColor: const Color(0xFF673AB7),
+              backgroundColor: const Color(0xFF6366F1),
               foregroundColor: Colors.white,
               child: const Icon(Icons.add),
             )
@@ -225,47 +288,165 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String _getTabTitle(int index, String userType) {
     if (userType == 'applicant') {
       switch (index) {
-        case 0: return 'My Profile';
-        case 1: return 'Explore Jobs';
-        case 2: return 'My Applications';
+        case 0: return 'Explore Jobs';
+        case 1: return 'My Applications';
         default: return '';
       }
     }
     switch (index) {
-      case 0: return 'HireHub';
+      case 0: return 'Dashboard';
       case 1: return 'Applications';
-      case 2: return 'Profile';
       default: return '';
     }
   }
 
   Widget _buildBody(String userType, bool isDesktop, bool isApplicant) {
     final auth = context.watch<AuthProvider>();
-    final bool isPublicTab = isApplicant ? _currentIndex == 1 : _currentIndex == 0;
+    final bool isPublicTab = isApplicant ? _currentIndex == 0 : _currentIndex == 0;
     
-    // Treat null userData as unauthenticated for private tabs to prevent crashes/weird states
     if ((!auth.isAuthenticated || auth.userData == null) && !isPublicTab) {
       return _buildAuthPlaceholder();
     }
 
     if (isApplicant) {
       switch (_currentIndex) {
-        case 0: return ApplicantDashboardScreen(
-          showAppBar: false, 
-          onBrowseJobs: () => setState(() {
-            _currentIndex = 1;
-            _clearJobNotifications();
-          }),
-        );
-        case 1: return _buildHomeBody(context, isDesktop, userType);
-        case 2: return const ApplicantApplicationsScreen();
+        case 0: return _buildHomeBody(context, isDesktop, userType);
+        case 1: return const ApplicantApplicationsScreen();
         default: return const SizedBox.shrink();
       }
     }
 
-    // Default 3-tab logic for others
-    if (_currentIndex == 0) return _buildHomeBody(context, isDesktop, userType);
-    return _buildOtherScreen(_currentIndex, userType);
+    if (_currentIndex == 0) {
+      if (userType == 'recruiter') return RecruiterDashboardScreen();
+      return _buildHomeBody(context, isDesktop, userType);
+    }
+    
+    if (_currentIndex == 1) {
+      if (userType == 'recruiter') return const RecruiterApplicationsScreen();
+      return const ApplicantApplicationsScreen();
+    }
+    
+    return const SizedBox.shrink();
+  }
+
+  Widget _buildDrawer(BuildContext context, String username, String userType) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primary = const Color(0xFF6366F1);
+    
+    return Drawer(
+      backgroundColor: Colors.white,
+      child: Column(
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(24, 60, 24, 32),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [primary, primary.withOpacity(0.8)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CircleAvatar(
+                  radius: 35,
+                  backgroundColor: Colors.white,
+                  child: Text(
+                    username[0].toUpperCase(),
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: primary),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  username,
+                  style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800),
+                ),
+                Text(
+                  userType.toUpperCase(),
+                  style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 12, fontWeight: FontWeight.w600, letterSpacing: 1),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              children: [
+                _buildDrawerItem(
+                  icon: Icons.person_outline_rounded,
+                  title: 'My Profile',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => userType == 'applicant' ? const ApplicantProfileScreen() : const RecruiterProfileScreen()),
+                    );
+                  },
+                ),
+                _buildDrawerItem(
+                  icon: Icons.description_outlined,
+                  title: 'My Applications',
+                  onTap: () {
+                    Navigator.pop(context);
+                    setState(() => _currentIndex = 1);
+                  },
+                ),
+                if (userType == 'admin') ...[
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    child: Text('ADMINISTRATION', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Color(0xFF94A3B8), letterSpacing: 1.5)),
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.admin_panel_settings_outlined,
+                    title: 'Admin Panel',
+                    onTap: () => UrlHelper.launchBackendUrl('/adminpanel/dashboard/'),
+                  ),
+                ],
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 24),
+                  child: Divider(height: 32),
+                ),
+                _buildDrawerItem(
+                  icon: Icons.logout_rounded,
+                  title: 'Logout',
+                  iconColor: Colors.redAccent,
+                  onTap: () {
+                    Navigator.pop(context);
+                    _logout();
+                  },
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Text(
+              'v2.4.0 High-Tech Edition',
+              style: TextStyle(color: Colors.grey.withOpacity(0.5), fontSize: 10, fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDrawerItem({required IconData icon, required String title, required VoidCallback onTap, Color? iconColor}) {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+      leading: Icon(icon, color: iconColor ?? const Color(0xFF475569), size: 24),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: iconColor ?? const Color(0xFF1E293B),
+          fontWeight: FontWeight.w700,
+          fontSize: 15,
+        ),
+      ),
+      onTap: onTap,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    );
   }
 
   Widget _buildHomeBody(BuildContext context, bool isDesktop, String userType) {
@@ -441,10 +622,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
             if (isMobile)
               Padding(
                 padding: const EdgeInsets.only(right: 8.0),
-                child: IconButton(
-                  icon: const Icon(Bootstrap.filter, color: Color(0xFF673AB7)),
-                  onPressed: () => Scaffold.of(context).openEndDrawer(),
-                  tooltip: 'Filter Jobs',
+                child: Builder(
+                  builder: (context) => IconButton(
+                    icon: const Icon(Bootstrap.filter, color: Color(0xFF6366F1)),
+                    onPressed: () => Scaffold.of(context).openEndDrawer(),
+                    tooltip: 'Filter Jobs',
+                  ),
                 ),
               ),
             Expanded(
@@ -566,107 +749,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildDrawer(BuildContext context, String username, String userType) {
-    return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          UserAccountsDrawerHeader(
-            accountName: Text(username),
-            accountEmail: Text(userType.toUpperCase()),
-            currentAccountPicture: const CircleAvatar(
-              backgroundColor: Colors.white,
-              child: Icon(Icons.person, color: Color(0xFF673AB7)),
-            ),
-            decoration: const BoxDecoration(color: Color(0xFF673AB7)),
-          ),
-          ListTile(
-            leading: const Icon(Icons.dashboard_outlined),
-            title: const Text('Dashboard'),
-            onTap: () => Navigator.pop(context),
-          ),
-          if (userType == 'applicant')
-            ListTile(
-              leading: const Icon(Icons.history_outlined),
-              title: const Text('My Applications'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const ApplicantApplicationsScreen()),
-                );
-              },
-            ),
-          if (userType == 'recruiter')
-            ListTile(
-              leading: const Icon(Icons.assignment_outlined),
-              title: const Text('Manage Applications'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const RecruiterApplicationsScreen()),
-                );
-              },
-            ),
-          if (userType == 'admin') ...[
-            const Divider(),
-            const Padding(
-              padding: EdgeInsets.only(left: 16.0, top: 8.0, bottom: 4.0),
-              child: Text(
-                'ADMIN PANEL',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey,
-                  letterSpacing: 1.2,
-                ),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.admin_panel_settings_outlined, color: Colors.blueAccent),
-              title: const Text('Admin Dashboard'),
-              subtitle: const Text('Manage jobs & recruiters'),
-              onTap: () {
-                Navigator.pop(context);
-                UrlHelper.launchBackendUrl('/adminpanel/dashboard/');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings_suggest_outlined, color: Colors.orangeAccent),
-              title: const Text('Django Admin'),
-              subtitle: const Text('Core database management'),
-              onTap: () {
-                Navigator.pop(context);
-                UrlHelper.launchBackendUrl('/admin/');
-              },
-            ),
-          ],
-          const Divider(),
-          if (context.watch<AuthProvider>().isAuthenticated)
-            ListTile(
-              leading: const Icon(Icons.logout, color: Colors.redAccent),
-              title: const Text('Logout'),
-              onTap: () {
-                Navigator.pop(context);
-                _logout();
-              },
-            )
-          else
-            ListTile(
-              leading: const Icon(Icons.login, color: Color(0xFF673AB7)),
-              title: const Text('Sign In'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                );
-              },
-            ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildCompactHero(BuildContext context) {
     return Consumer<PlatformProvider>(

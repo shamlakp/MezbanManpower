@@ -29,17 +29,10 @@ class _SplashScreenState extends State<SplashScreen> {
     await Future.delayed(const Duration(seconds: 4));
 
     if (mounted) {
-      if (auth.isAuthenticated) {
-        // Navigate to DashboardScreen (Home)
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const DashboardScreen()),
-        );
-      } else {
-        // Navigate to LoginScreen
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const LoginScreen()),
-        );
-      }
+      // Always navigate to DashboardScreen so guest users can see the home page
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const DashboardScreen()),
+      );
     }
   }
 

@@ -1,3 +1,4 @@
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -12,54 +13,12 @@ class ApplicantProfileScreen extends StatefulWidget {
 
 class _ApplicantProfileScreenState extends State<ApplicantProfileScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _fullName = TextEditingController();
   final _phone = TextEditingController();
   final _bio = TextEditingController();
   final _skills = TextEditingController();
   PlatformFile? _resumeFile;
-
-  Future<void> _pickResume() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['pdf', 'doc', 'docx'],
-      withData: true,
-    );
-    if (result != null && result.files.isNotEmpty) {
-      setState(() {
-        _resumeFile = result.files.first;
-      });
-    }
-  }
-
-  Future<void> _save() async {
-    if (!_formKey.currentState!.validate()) return;
-    final data = {
-      'phone': _phone.text,
-      'bio': _bio.text,
-      'skills': _skills.text,
-    };
-    final success = await context.read<AuthProvider>().updateApplicantProfile(
-      data,
-      _resumeFile,
-    );
-    if (success) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Profile saved successfully')));
-        // Removed Navigator.of(context).pop(); as this screen is often embedded in a tab
-      }
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              context.read<AuthProvider>().errorMessage ?? 'Failed',
-            ),
-          ),
-        );
-      }
-    }
-  }
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -68,124 +27,160 @@ class _ApplicantProfileScreenState extends State<ApplicantProfileScreen> {
   }
 
   Future<void> _loadProfile() async {
-    final profile = await context.read<AuthProvider>().fetchApplicantProfile();
+    final auth = context.read<AuthProvider>();
+    _fullName.text = auth.userData?['full_name'] ?? '';
+    
+    final profile = await auth.fetchApplicantProfile();
     if (profile != null) {
       _phone.text = profile['phone'] ?? '';
       _bio.text = profile['bio'] ?? '';
       _skills.text = profile['skills'] ?? '';
-      setState(() {});
+      if (mounted) setState(() {});
+    }
+  }
+
+  Future<void> _pickResume() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf', 'doc', 'docx'],
+    );
+    if (result != null && result.files.isNotEmpty) {
+      setState(() => _resumeFile = result.files.first);
+    }
+  }
+
+  Future<void> _save() async {
+    if (!_formKey.currentState!.validate()) return;
+    
+    setState(() => _isSaving = true);
+    
+    final data = {
+      'full_name': _fullName.text,
+      'phone': _phone.text,
+      'bio': _bio.text,
+      'skills': _skills.text,
+    };
+    
+    final success = await context.read<AuthProvider>().updateApplicantProfile(data, _resumeFile);
+    
+    if (mounted) {
+      setState(() => _isSaving = false);
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile updated successfully!'), backgroundColor: Color(0xFF10B981)));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.read<AuthProvider>().errorMessage ?? 'Failed to update profile')));
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    const primary = Color(0xFF6366F1);
+    
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: const Color(0xFFFAFAFB),
       appBar: AppBar(
-        title: const Text('Applicant Profile'),
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF1E293B), size: 20),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text('Update Profile', style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.w900)),
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.all(24.0),
+        child: Form(
+          key: _formKey,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const CircleAvatar(
-                radius: 40,
-                backgroundColor: Color(0xFFE8EAF6),
-                child: Icon(Icons.person, size: 40, color: Color(0xFF1A237E)),
-              ),
-              const SizedBox(height: 24),
-              Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+              Center(
+                child: Stack(
                   children: [
-                    _buildReadOnlyField('Username', context.watch<AuthProvider>().userData?['username'] ?? ''),
-                    const SizedBox(height: 16),
-                    _buildReadOnlyField('Email', context.watch<AuthProvider>().userData?['email'] ?? ''),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _phone,
-                      decoration: const InputDecoration(
-                        labelText: 'Phone',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.phone),
-                      ),
-                      validator: (v) => v!.isEmpty ? 'Required' : null,
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _bio,
-                      decoration: const InputDecoration(
-                        labelText: 'Bio',
-                        border: OutlineInputBorder(),
-                        alignLabelWithHint: true,
-                        prefixIcon: Icon(Icons.info_outline),
-                      ),
-                      maxLines: 4,
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _skills,
-                      decoration: const InputDecoration(
-                        labelText: 'Skills',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.code),
-                        hintText: 'e.g. Flutter, Python, SQL',
-                      ),
-                    ),
-                    const SizedBox(height: 16),
                     Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey[300]!),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: [
-                          ElevatedButton.icon(
-                            onPressed: _pickResume,
-                            icon: const Icon(Icons.upload_file),
-                            label: const Text('Resume'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.grey[200],
-                              foregroundColor: Colors.black87,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              _resumeFile?.name ?? 'No file selected',
-                              style: TextStyle(color: Colors.grey[600]),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: primary, width: 2)),
+                      child: CircleAvatar(
+                        radius: 50,
+                        backgroundColor: const Color(0xFFF1F5F9),
+                        child: Text(
+                          _fullName.text.isNotEmpty ? _fullName.text[0].toUpperCase() : '?',
+                          style: const TextStyle(fontSize: 40, fontWeight: FontWeight.w900, color: primary),
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 32),
-                    Consumer<AuthProvider>(
-                      builder: (context, auth, _) {
-                        return auth.isLoading
-                            ? const Center(child: CircularProgressIndicator())
-                            : ElevatedButton(
-                                onPressed: _save,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF1A237E),
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                ),
-                                child: const Text('Save Profile', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                              );
-                      },
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: const BoxDecoration(color: primary, shape: BoxShape.circle),
+                        child: const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 18),
+                      ),
                     ),
                   ],
                 ),
               ),
+              const SizedBox(height: 40),
+              _buildSectionTitle('Basic Information'),
+              _buildModernField(controller: _fullName, label: 'Full Name', icon: Icons.person_outline_rounded),
+              const SizedBox(height: 16),
+              _buildModernField(controller: _phone, label: 'Phone Number', icon: Icons.phone_outlined, keyboardType: TextInputType.phone),
+              const SizedBox(height: 32),
+              _buildSectionTitle('Professional Bio'),
+              _buildModernField(controller: _bio, label: 'Tell us about yourself', icon: Icons.info_outline_rounded, maxLines: 4),
+              const SizedBox(height: 32),
+              _buildSectionTitle('Skills & Expertise'),
+              _buildModernField(controller: _skills, label: 'Skills (e.g. Flutter, Design)', icon: Icons.code_rounded),
+              const SizedBox(height: 32),
+              _buildSectionTitle('Resume'),
+              GestureDetector(
+                onTap: _pickResume,
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.file_present_rounded, color: primary),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Text(
+                          _resumeFile?.name ?? 'Upload New Resume',
+                          style: TextStyle(
+                            color: _resumeFile != null ? const Color(0xFF1E293B) : const Color(0xFF94A3B8),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      const Icon(Icons.cloud_upload_outlined, color: Color(0xFF94A3B8)),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 48),
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: _isSaving ? null : _save,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primary,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
+                  child: _isSaving
+                      ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                      : const Text('Save Changes', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+                ),
+              ),
+              const SizedBox(height: 40),
             ],
           ),
         ),
@@ -193,16 +188,37 @@ class _ApplicantProfileScreenState extends State<ApplicantProfileScreen> {
     );
   }
 
-  Widget _buildReadOnlyField(String label, String value) {
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 12),
+      child: Text(
+        title.toUpperCase(),
+        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFF94A3B8), letterSpacing: 1),
+      ),
+    );
+  }
+
+  Widget _buildModernField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    int maxLines = 1,
+    TextInputType? keyboardType,
+  }) {
     return TextFormField(
-      initialValue: value,
-      readOnly: true,
+      controller: controller,
+      maxLines: maxLines,
+      keyboardType: keyboardType,
+      style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
       decoration: InputDecoration(
         labelText: label,
-        border: const OutlineInputBorder(),
+        labelStyle: const TextStyle(color: Color(0xFF94A3B8), fontWeight: FontWeight.w500),
+        prefixIcon: Icon(icon, color: const Color(0xFF6366F1), size: 20),
         filled: true,
-        fillColor: Colors.grey[100],
-        prefixIcon: Icon(label == 'Email' ? Icons.email : Icons.person_outline),
+        fillColor: Colors.white,
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2)),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
       ),
     );
   }
