@@ -4,8 +4,11 @@ import 'package:hirehub_ui/models/job_post.dart';
 import 'package:hirehub_ui/utils/url_helper.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
-import 'login_screen.dart';
+import '../constants/colors.dart';
 import 'apply_job_screen.dart';
+import 'login_screen.dart';
+import '../widgets/glass_card.dart';
+import '../widgets/modern_headline.dart';
 
 
 class JobDetailScreen extends StatelessWidget {
@@ -16,14 +19,14 @@ class JobDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: NeutralColor.c50,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: const BackButton(color: Colors.black87),
+        leading: BackButton(color: NeutralColor.c900),
         title: Text(
           job.companyName,
-          style: const TextStyle(color: Colors.black87, fontSize: 18),
+          style: TextStyle(color: NeutralColor.c900, fontSize: 16, fontWeight: FontWeight.w700),
         ),
         centerTitle: true,
       ),
@@ -32,54 +35,65 @@ class JobDetailScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header Section
-            Container(
-              color: Colors.grey[50],
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
-              child: Column(
-                children: [
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
+            Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: GlassCard(
+                padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+                opacity: 0.8,
+                color: Colors.white,
+                child: Column(
+                  children: [
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 15,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: (job.image != null && job.image!.isNotEmpty)
+                            ? Image.network(
+                                UrlHelper.resolveMediaUrl(job.image!),
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    const Icon(Icons.business, size: 40, color: NeutralColor.c400),
+                              )
+                            : const Icon(Icons.business, size: 40, color: NeutralColor.c400),
+                      ),
                     ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: (job.image != null && job.image!.isNotEmpty)
-                          ? Image.network(
-                              UrlHelper.resolveMediaUrl(job.image!),
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  const Icon(Icons.business, size: 40, color: Colors.grey),
-                            )
-                          : const Icon(Icons.business, size: 40, color: Colors.grey),
+                    const SizedBox(height: 24),
+                    Text(
+                      job.position,
+                      style: const TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w900,
+                        color: NeutralColor.c900,
+                        letterSpacing: -0.5,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    job.position,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: BrandColor.c50,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        '${job.location} • ${job.workingTime}',
+                        style: const TextStyle(fontSize: 12, color: BrandColor.c500, fontWeight: FontWeight.w700),
+                      ),
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '${job.location} • ${job.workingTime}',
-                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
 
@@ -117,19 +131,19 @@ class JobDetailScreen extends StatelessWidget {
                     spacing: 24,
                     runSpacing: 24,
                     children: [
-                      _buildDetailItem(Icons.attach_money, 'Salary', '\$${job.salary}'),
-                      _buildDetailItem(Icons.schedule, 'Work Schedule', job.workingDays),
-                      _buildDetailItem(Icons.people, 'Vacancies', '${job.noOfVacancies} Openings'),
+                      _buildDetailItem(context, Icons.attach_money, 'Salary', '\$${job.salary}'),
+                      _buildDetailItem(context, Icons.schedule, 'Work Schedule', job.workingDays),
+                      _buildDetailItem(context, Icons.people, 'Vacancies', '${job.noOfVacancies} Openings'),
                       if (job.annualLeave > 0)
-                        _buildDetailItem(Icons.flight_takeoff, 'Annual Leave', '${job.annualLeave} Days'),
+                        _buildDetailItem(context, Icons.flight_takeoff, 'Annual Leave', '${job.annualLeave} Days'),
                       if (job.category.isNotEmpty) 
-                        _buildDetailItem(Icons.category, 'Category', job.category),
+                        _buildDetailItem(context, Icons.category, 'Category', job.category),
                       if (job.industry.isNotEmpty) 
-                        _buildDetailItem(Icons.business, 'Industry', job.industry),
+                        _buildDetailItem(context, Icons.business, 'Industry', job.industry),
                       if (job.accommodation.isNotEmpty) 
-                        _buildDetailItem(Icons.home_work, 'Accommodation', job.accommodation),
+                        _buildDetailItem(context, Icons.home_work, 'Accommodation', job.accommodation),
                       if (job.meals.isNotEmpty) 
-                        _buildDetailItem(Icons.restaurant, 'Meals', job.meals),
+                        _buildDetailItem(context, Icons.restaurant, 'Meals', job.meals),
                     ],
                   ),
                 ],
@@ -139,14 +153,15 @@ class JobDetailScreen extends StatelessWidget {
         ),
       ),
       bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
         decoration: BoxDecoration(
           color: Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -4),
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 20,
+              offset: const Offset(0, -5),
             ),
           ],
         ),
@@ -170,13 +185,13 @@ class JobDetailScreen extends StatelessWidget {
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0D47A1),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                backgroundColor: BrandColor.c500,
+                foregroundColor: NeutralColor.c50,
+                padding: const EdgeInsets.symmetric(vertical: 18),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                elevation: 0,
               ),
-              child: const Text('Apply Now'),
+              child: const Text('Apply for this Job', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
             );
           },
         ),
@@ -192,7 +207,7 @@ class JobDetailScreen extends StatelessWidget {
         style: const TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.bold,
-          color: Colors.black87,
+          color: NeutralColor.c900,
         ),
       ),
     );
@@ -204,41 +219,51 @@ class JobDetailScreen extends StatelessWidget {
       style: TextStyle(
         fontSize: 15,
         height: 1.6,
-        color: Colors.grey[800],
+        color: NeutralColor.c800,
       ),
     );
   }
 
-  Widget _buildDetailItem(IconData icon, String label, String value) {
-    return SizedBox(
-      width: 150,
+  Widget _buildDetailItem(BuildContext context, IconData icon, String label, String value) {
+    return Container(
+      width: (MediaQuery.of(context).size.width - 72) / 2, // 2 items per row
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: NeutralColor.c200),
+      ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.blue[50],
-              borderRadius: BorderRadius.circular(8),
+              color: BrandColor.c50,
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, size: 20, color: const Color(0xFF0D47A1)),
+            child: Icon(icon, size: 18, color: BrandColor.c500),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   label,
-                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  style: const TextStyle(fontSize: 11, color: NeutralColor.c500, fontWeight: FontWeight.w600),
                 ),
+                const SizedBox(height: 2),
                 Text(
                   value,
                   style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: NeutralColor.c900,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),

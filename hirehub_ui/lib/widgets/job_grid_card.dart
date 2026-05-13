@@ -172,7 +172,7 @@ class JobGridCard extends StatelessWidget {
     return ElevatedButton(
       onPressed: onTap,
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFF673AB7),
+        backgroundColor: const Color(0xFF0EA5E9),
         foregroundColor: Colors.white,
         elevation: 0,
         minimumSize: Size.zero,

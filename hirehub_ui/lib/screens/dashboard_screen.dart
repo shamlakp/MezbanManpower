@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../constants/colors.dart';
 import '../providers/job_provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/platform_provider.dart';
 import '../widgets/job_grid_card.dart';
 import '../widgets/filter_sidebar.dart';
 import '../widgets/hero_search_bar.dart';
+import '../widgets/floating_bottom_nav.dart';
 import '../utils/url_helper.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'login_screen.dart';
@@ -151,6 +153,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final bool isApplicant = userType == 'applicant';
 
     return Scaffold(
+      extendBody: true,
       backgroundColor: Colors.white,
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -161,25 +164,85 @@ class _DashboardScreenState extends State<DashboardScreen> {
         leading: Builder(
           builder: (context) => Padding(
             padding: const EdgeInsets.only(left: 16.0),
-            child: GestureDetector(
-              onTap: () {
-                if (auth.isAuthenticated) {
-                  Scaffold.of(context).openDrawer();
-                } else {
-                  Navigator.of(context).push(MaterialPageRoute(builder: (_) => const LoginScreen()));
-                }
-                
-              },
-              child: CircleAvatar(
-                backgroundColor: const Color(0xFFEEF2FF),
-                child: auth.isAuthenticated 
-                  ? Text(
+            child: auth.isAuthenticated 
+              ? PopupMenuButton<String>(
+                  offset: const Offset(0, 50),
+                    onSelected: (value) {
+                      if (value == 'dashboard') {
+                        if (userType == 'admin') {
+                          // Admin stays on feed or we show a message
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('You are on the main dashboard. Use sidebar for admin tools.')),
+                          );
+                        } else {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => userType == 'applicant' ? const ApplicantDashboardScreen() : const RecruiterDashboardScreen()),
+                          );
+                        }
+                      } else if (value == 'profile') {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => userType == 'applicant' 
+                              ? const ApplicantProfileScreen() 
+                              : userType == 'admin' 
+                                ? const AdminProfileScreen() 
+                                : const RecruiterProfileScreen()
+                          ),
+                        );
+                      } else if (value == 'logout') {
+                        _logout();
+                      }
+                    },
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      value: 'dashboard',
+                      child: Row(
+                        children: [
+                          Icon(Icons.dashboard_rounded, color: BrandColor.c500, size: 20),
+                          const SizedBox(width: 12),
+                          const Text('Dashboard', style: TextStyle(fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'profile',
+                      child: Row(
+                        children: [
+                          Icon(Icons.person_outline_rounded, color: NeutralColor.c600, size: 20),
+                          const SizedBox(width: 12),
+                          Text('My Profile'),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuDivider(),
+                    const PopupMenuItem(
+                      value: 'logout',
+                      child: Row(
+                        children: [
+                          Icon(Icons.logout_rounded, color: DangerColor.c500, size: 20),
+                          const SizedBox(width: 12),
+                          const Text('Logout', style: TextStyle(color: DangerColor.c500)),
+                        ],
+                      ),
+                    ),
+                  ],
+                  child: CircleAvatar(
+                    backgroundColor: BrandColor.c50,
+                    child: Text(
                       username[0].toUpperCase(),
-                      style: const TextStyle(color: Color(0xFF6366F1), fontWeight: FontWeight.bold),
-                    )
-                  : const Icon(Icons.person_outline_rounded, color: Color(0xFF6366F1)),
-              ),
-            ),
+                      style: const TextStyle(color: BrandColor.c500, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                )
+              : GestureDetector(
+                  onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const LoginScreen())),
+                  child: const CircleAvatar(
+                    backgroundColor: BrandColor.c50,
+                    child: Icon(Icons.person_outline_rounded, color: BrandColor.c500),
+                  ),
+                ),
           ),
         ),
         centerTitle: true,
@@ -188,13 +251,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: const Color(0xFFF1F5F9),
+              color: NeutralColor.c100,
               borderRadius: BorderRadius.circular(20),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.location_on_rounded, color: Color(0xFF6366F1), size: 16),
+                const Icon(Icons.location_on_rounded, color: BrandColor.c500, size: 16),
                 const SizedBox(width: 6),
                 Flexible(
                   child: Text(
@@ -202,21 +265,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     style: const TextStyle(
                       fontSize: 12, 
                       fontWeight: FontWeight.w700, 
-                      color: Color(0xFF1E293B),
+                      color: NeutralColor.c900,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF64748B), size: 14),
+                const Icon(Icons.keyboard_arrow_down_rounded, color: NeutralColor.c600, size: 14),
               ],
             ),
           ),
         ),
         actions: [
+          Consumer<PlatformProvider>(
+            builder: (context, platform, child) {
+              return IconButton(
+                icon: Icon(
+                  platform.themeMode == ThemeMode.light 
+                    ? Icons.dark_mode_outlined 
+                    : Icons.light_mode_outlined,
+                  color: Theme.of(context).colorScheme.onBackground,
+                ),
+                onPressed: () => platform.toggleTheme(),
+              );
+            },
+          ),
           Stack(
             children: [
               IconButton(
-                icon: const Icon(Icons.notifications_none_rounded, color: Color(0xFF1E293B), size: 28),
+                icon: Icon(Icons.notifications_none_rounded, color: Theme.of(context).colorScheme.onBackground, size: 28),
                 onPressed: () {},
               ),
               if (_notificationCount > 0)
@@ -225,7 +301,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   top: 8,
                   child: Container(
                     padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(color: Color(0xFFEF4444), shape: BoxShape.circle),
+                    decoration: const BoxDecoration(color: DangerColor.c500, shape: BoxShape.circle),
                     constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
                     child: Text(
                       '$_notificationCount',
@@ -244,41 +320,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: SafeArea(child: FilterSidebar()),
       ),
       body: _buildBody(userType, isDesktop, isApplicant),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))],
-        ),
-        child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (index) {
-            setState(() => _currentIndex = index);
-            if ((isApplicant && index == 0) || (!isApplicant && index == 0)) {
-              _clearJobNotifications();
-            }
-          },
-          selectedItemColor: const Color(0xFF6366F1),
-          unselectedItemColor: const Color(0xFF94A3B8),
-          showSelectedLabels: true,
-          showUnselectedLabels: true,
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.white,
-          elevation: 0,
-          items: isApplicant 
-            ? const [
-                BottomNavigationBarItem(icon: Icon(Icons.search_rounded), activeIcon: Icon(Icons.search_rounded), label: 'Explore'),
-                BottomNavigationBarItem(icon: Icon(Icons.description_outlined), activeIcon: Icon(Icons.description), label: 'Applications'),
-              ]
-            : const [
-                BottomNavigationBarItem(icon: Icon(Icons.dashboard_outlined), activeIcon: Icon(Icons.dashboard_rounded), label: 'Dashboard'),
-                BottomNavigationBarItem(icon: Icon(Icons.description_outlined), activeIcon: Icon(Icons.description), label: 'Applications'),
-              ],
-        ),
+      bottomNavigationBar: FloatingBottomNav(
+        currentIndex: _currentIndex,
+        isApplicant: isApplicant,
+        onTap: (index) {
+          setState(() => _currentIndex = index);
+          // Clear notifications when visiting Explore (Job Feed)
+          final bool isExploreTab = isApplicant ? index == 0 : index == 1;
+          if (isExploreTab) {
+            _clearJobNotifications();
+          }
+        },
       ),
       floatingActionButton: userType == 'recruiter' && _currentIndex == 0
           ? FloatingActionButton(
               onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CreateJobScreen())),
-              backgroundColor: const Color(0xFF6366F1),
-              foregroundColor: Colors.white,
+              backgroundColor: BrandColor.c500,
+              foregroundColor: NeutralColor.c50,
               child: const Icon(Icons.add),
             )
           : null,
@@ -311,27 +369,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (isApplicant) {
       switch (_currentIndex) {
         case 0: return _buildHomeBody(context, isDesktop, userType);
-        case 1: return const ApplicantApplicationsScreen();
+        case 1: return const ApplicantDashboardScreen(showAppBar: false); // Hide appbar when in bottom nav
+        case 2: return const ApplicantApplicationsScreen();
         default: return const SizedBox.shrink();
       }
     }
 
-    if (_currentIndex == 0) {
-      if (userType == 'recruiter') return RecruiterDashboardScreen();
-      return _buildHomeBody(context, isDesktop, userType);
+    switch (_currentIndex) {
+      case 0: 
+        if (userType == 'recruiter') return const RecruiterDashboardScreen();
+        return _buildHomeBody(context, isDesktop, userType);
+      case 1:
+        return _buildHomeBody(context, isDesktop, userType);
+      case 2:
+        if (userType == 'recruiter') return const RecruiterApplicationsScreen();
+        return const ApplicantApplicationsScreen();
+      default:
+        return const SizedBox.shrink();
     }
-    
-    if (_currentIndex == 1) {
-      if (userType == 'recruiter') return const RecruiterApplicationsScreen();
-      return const ApplicantApplicationsScreen();
-    }
-    
-    return const SizedBox.shrink();
   }
 
   Widget _buildDrawer(BuildContext context, String username, String userType) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primary = const Color(0xFF6366F1);
+    final primary = BrandColor.c500;
     
     return Drawer(
       backgroundColor: Colors.white,
@@ -375,13 +435,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
               padding: const EdgeInsets.symmetric(vertical: 12),
               children: [
                 _buildDrawerItem(
+                  icon: Icons.dashboard_rounded,
+                  title: 'My Dashboard',
+                  onTap: () {
+                    Navigator.pop(context);
+                    if (userType == 'admin') {
+                       // Already on main dashboard
+                    } else {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => userType == 'applicant' ? const ApplicantDashboardScreen() : const RecruiterDashboardScreen()),
+                      );
+                    }
+                  },
+                ),
+                _buildDrawerItem(
                   icon: Icons.person_outline_rounded,
                   title: 'My Profile',
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => userType == 'applicant' ? const ApplicantProfileScreen() : const RecruiterProfileScreen()),
+                      MaterialPageRoute(
+                        builder: (_) => userType == 'applicant' 
+                          ? const ApplicantProfileScreen() 
+                          : userType == 'admin' 
+                            ? const AdminProfileScreen() 
+                            : const RecruiterProfileScreen()
+                      ),
                     );
                   },
                 ),
@@ -396,12 +477,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 if (userType == 'admin') ...[
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                    child: Text('ADMINISTRATION', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Color(0xFF94A3B8), letterSpacing: 1.5)),
+                    child: Text('ADMINISTRATION', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: NeutralColor.c400, letterSpacing: 1.5)),
                   ),
                   _buildDrawerItem(
                     icon: Icons.admin_panel_settings_outlined,
-                    title: 'Admin Panel',
+                    title: 'Admin Dashboard',
                     onTap: () => UrlHelper.launchBackendUrl('/adminpanel/dashboard/'),
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.settings_suggest_outlined,
+                    title: 'Django Admin Panel',
+                    onTap: () => UrlHelper.launchBackendUrl('/admin/'),
                   ),
                 ],
                 const Padding(
@@ -435,11 +521,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildDrawerItem({required IconData icon, required String title, required VoidCallback onTap, Color? iconColor}) {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
-      leading: Icon(icon, color: iconColor ?? const Color(0xFF475569), size: 24),
+      leading: Icon(icon, color: iconColor ?? NeutralColor.c700, size: 24),
       title: Text(
         title,
         style: TextStyle(
-          color: iconColor ?? const Color(0xFF1E293B),
+          color: iconColor ?? NeutralColor.c900,
           fontWeight: FontWeight.w700,
           fontSize: 15,
         ),
@@ -490,7 +576,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ];
                 return GestureDetector(
                   onTap: () {
-                    context.read<JobProvider>().searchJobs(categories: [categories[index]]);
+                    final provider = context.read<JobProvider>();
+                    provider.clearSearch(); // Clear other filters first
+                    provider.searchJobs(categories: [categories[index]]);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Showing ${categories[index]} jobs'),
+                        duration: const Duration(seconds: 1),
+                        behavior: SnackBarBehavior.floating,
+                        backgroundColor: BrandColor.c500,
+                      ),
+                    );
                   },
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12.0),
@@ -504,7 +600,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.1),
+                                color: Colors.black.withOpacity(0.1),
                                 blurRadius: 8,
                                 offset: const Offset(0, 4),
                               ),
@@ -512,10 +608,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             image: DecorationImage(
                               image: NetworkImage(imagePaths[index]),
                               fit: BoxFit.cover,
-                              colorFilter: ColorFilter.mode(
-                                Colors.black.withValues(alpha: 0.1),
-                                BlendMode.darken,
-                              ),
                             ),
                           ),
                         ),
@@ -524,8 +616,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           categories[index],
                           style: const TextStyle(
                             fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black87,
+                            fontWeight: FontWeight.w700,
+                            color: NeutralColor.c900,
                           ),
                         ),
                       ],
@@ -603,8 +695,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               MaterialPageRoute(builder: (_) => const LoginScreen()),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF673AB7),
-              foregroundColor: Colors.white,
+              backgroundColor: BrandColor.c500,
+              foregroundColor: NeutralColor.c50,
             ),
             child: const Text('Sign In'),
           ),
@@ -624,7 +716,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 padding: const EdgeInsets.only(right: 8.0),
                 child: Builder(
                   builder: (context) => IconButton(
-                    icon: const Icon(Bootstrap.filter, color: Color(0xFF6366F1)),
+                    icon: const Icon(Bootstrap.filter, color: BrandColor.c500),
                     onPressed: () => Scaffold.of(context).openEndDrawer(),
                     tooltip: 'Filter Jobs',
                   ),
@@ -824,7 +916,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           _buildCircleIcon(
                             icon: Icons.phone,
                             color: Colors.white,
-                            bgColor: const Color(0xFF673AB7),
+                            bgColor: IndigoColor.c500,
                             onTap: () => launchUrl(Uri.parse('tel:${settings.phoneNumber}')),
                           ),
                           const SizedBox(width: 12),

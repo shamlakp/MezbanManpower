@@ -6,6 +6,8 @@ import 'package:flutter/foundation.dart';
 import 'dart:io';
 import '../providers/job_provider.dart';
 import '../providers/auth_provider.dart';
+import '../constants/colors.dart';
+import '../widgets/success_dialog.dart';
 
 class CreateJobScreen extends StatefulWidget {
   final int? selectedCompanyId;
@@ -137,10 +139,10 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
     if (mounted) {
       setState(() => _isSubmitting = false);
       if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Job posted successfully! Waiting for admin approval.')),
-        );
-        Navigator.pop(context);
+        showDialog(
+          context: context,
+          builder: (_) => const SuccessDialog(message: 'Job posted successfully! Waiting for admin approval.'),
+        ).then((_) => Navigator.pop(context));
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(context.read<JobProvider>().errorMessage ?? 'Failed to post job')),
@@ -155,10 +157,10 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
       appBar: AppBar(
         title: const Text('Post a New Job'),
         backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
+        foregroundColor: NeutralColor.c900,
         elevation: 0,
       ),
-      backgroundColor: Colors.grey[50], // Background color
+      backgroundColor: NeutralColor.c50, // Background color
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Form(
@@ -200,7 +202,7 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
               if (_isLoadingCompanies)
                 const Center(child: CircularProgressIndicator())
               else if (_companies.isEmpty)
-                const Text('No companies found. Create one in your dashboard first.', style: TextStyle(color: Colors.red))
+                const Text('No companies found. Create one in your dashboard first.', style: TextStyle(color: DangerColor.c500))
               else
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -272,17 +274,17 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
               ElevatedButton(
                 onPressed: _isSubmitting ? null : _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF673AB7),
-                  foregroundColor: Colors.white,
+                  backgroundColor: BrandColor.c500,
+                  foregroundColor: NeutralColor.c50,
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   elevation: 0,
                 ),
                 child: _isSubmitting
                     ? const SizedBox(
                         height: 20,
                         width: 20,
-                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        child: CircularProgressIndicator(color: NeutralColor.c50, strokeWidth: 2),
                       )
                     : const Text('Post Job', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
@@ -298,7 +300,7 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
       padding: const EdgeInsets.only(bottom: 16.0),
       child: Text(
         title,
-        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: NeutralColor.c900),
       ),
     );
   }
@@ -316,16 +318,20 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
-        prefixIcon: Icon(icon, size: 20),
+        prefixIcon: Icon(icon, size: 20, color: BrandColor.c500),
         filled: true,
         fillColor: Colors.white,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.grey[300]!),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: NeutralColor.c200),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.grey[300]!),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: NeutralColor.c200),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: BrandColor.c500, width: 1.5),
         ),
         alignLabelWithHint: maxLines > 1,
       ),

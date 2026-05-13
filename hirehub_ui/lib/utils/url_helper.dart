@@ -20,25 +20,24 @@ class UrlHelper {
   static String resolveMediaUrl(String? path) {
     if (path == null || path.isEmpty) return '';
     
-    // Fix for Android emulator receiving localhost URLs from backend
-    if (defaultTargetPlatform == TargetPlatform.android && kDebugMode) {
-      if (path.startsWith('http://127.0.0.1')) {
-        path = path.replaceFirst('127.0.0.1', '10.0.2.2');
-      } else if (path.startsWith('http://localhost')) {
-        path = path.replaceFirst('localhost', '10.0.2.2');
-      }
-    }
-
-    if (path.startsWith('http')) return path;
-    
-    // Ensure it starts with /
-    final formattedPath = path.startsWith('/') ? path : '/$path';
-    
     String baseUrl = getBaseUrl();
     if (baseUrl.endsWith('/')) {
       baseUrl = baseUrl.substring(0, baseUrl.length - 1);
     }
+
+    // Handle absolute URLs that might have wrong hosts (common in local dev)
+    if (path.startsWith('http')) {
+      // If it's a localhost/127.0.0.1 URL but we're on Android emulator, fix it
+      if (defaultTargetPlatform == TargetPlatform.android && kDebugMode) {
+        if (path.contains('127.0.0.1') || path.contains('localhost')) {
+          return path.replaceAll('127.0.0.1', '10.0.2.2').replaceAll('localhost', '10.0.2.2');
+        }
+      }
+      return path;
+    }
     
+    // Ensure relative path starts with /
+    final formattedPath = path.startsWith('/') ? path : '/$path';
     return '$baseUrl$formattedPath';
   }
 

@@ -7,6 +7,7 @@ import 'providers/application_provider.dart';
 import 'screens/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'constants/theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,29 +35,17 @@ class MezbanManpowerApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => PlatformProvider()),
         ChangeNotifierProvider(create: (_) => ApplicationProvider()),
       ],
-      child: MaterialApp(
-        title: 'MEZBAN MANPOWER',
-        theme: ThemeData(
-          fontFamily: 'Inter',
-          useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF673AB7),
-            brightness: Brightness.light,
-          ),
-          appBarTheme: const AppBarTheme(
-            centerTitle: true,
-            backgroundColor: Color(0xFF673AB7),
-            foregroundColor: Colors.white,
-            elevation: 0,
-          ),
-          cardTheme: CardThemeData(
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        ),
-        home: const SplashScreen(), // Start with splash screen for auth check
+      child: Consumer<PlatformProvider>(
+        builder: (context, platform, child) {
+          return MaterialApp(
+            title: 'MEZBAN MANPOWER',
+            theme: lightTheme,
+            darkTheme: darkTheme,
+            themeMode: platform.themeMode,
+            debugShowCheckedModeBanner: false,
+            home: const SplashScreen(),
+          );
+        },
       ),
     );
   }

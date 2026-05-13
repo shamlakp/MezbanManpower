@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/application_provider.dart';
 import '../models/job_application.dart';
+import '../constants/colors.dart';
 
 class ApplicantApplicationsScreen extends StatefulWidget {
   const ApplicantApplicationsScreen({super.key});
@@ -44,10 +45,11 @@ class _ApplicantApplicationsScreenState extends State<ApplicantApplicationsScree
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(provider.errorMessage!, style: const TextStyle(color: Colors.red)),
+                  Text(provider.errorMessage!, style: const TextStyle(color: DangerColor.c500)),
                   ElevatedButton(
                     onPressed: () => provider.fetchApplications(),
                     child: const Text('Retry'),
+                    style: ElevatedButton.styleFrom(backgroundColor: BrandColor.c500, foregroundColor: NeutralColor.c50),
                   ),
                 ],
               ),
@@ -96,7 +98,7 @@ class _ApplicantApplicationsScreenState extends State<ApplicantApplicationsScree
                       const SizedBox(height: 4),
                       Text(
                         app.companyName,
-                        style: TextStyle(color: Colors.grey[600]),
+                        style: TextStyle(color: NeutralColor.c600),
                       ),
                     ],
                   ),
@@ -126,13 +128,13 @@ class _ApplicantApplicationsScreenState extends State<ApplicantApplicationsScree
     Color color;
     switch (status) {
       case 'shortlisted':
-        color = Colors.green;
+        color = SuccessColor.c500;
         break;
       case 'rejected':
-        color = Colors.red;
+        color = DangerColor.c500;
         break;
       default:
-        color = Colors.blue;
+        color = BrandColor.c500;
     }
 
     return Container(

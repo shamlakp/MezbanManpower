@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../utils/url_helper.dart';
+import '../constants/colors.dart';
 
 class CompanyProfileScreen extends StatefulWidget {
   final Map<String, dynamic>? company;
@@ -110,12 +111,12 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: NeutralColor.c50,
       appBar: AppBar(
-        title: const Text('Company Profile', style: TextStyle(color: Colors.black87)),
+        title: Text('Company Profile', style: TextStyle(color: NeutralColor.c900)),
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: const BackButton(color: Colors.black87),
+        leading: BackButton(color: NeutralColor.c900),
       ),
       body: _isLoading 
           ? const Center(child: CircularProgressIndicator())
@@ -149,7 +150,7 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
                             child: _pickedFile != null
                                 ? (kIsWeb && _pickedFile!.bytes != null 
                                     ? Image.memory(_pickedFile!.bytes!, fit: BoxFit.cover) 
-                                    : const Icon(Icons.check, color: Colors.green))
+                                    : const Icon(Icons.check, color: SuccessColor.c500))
                                 : (_existingLogoUrl != null && _existingLogoUrl!.isNotEmpty)
                                     ? Image.network(
                                         _getImageUrl(_existingLogoUrl!),
@@ -187,8 +188,8 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
                           child: ElevatedButton(
                             onPressed: auth.isLoading ? null : _save,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF673AB7),
-                              foregroundColor: Colors.white,
+                              backgroundColor: BrandColor.c500,
+                              foregroundColor: NeutralColor.c50,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                             ),
@@ -215,7 +216,7 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
       padding: const EdgeInsets.only(bottom: 16.0),
       child: Text(
         title,
-        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: NeutralColor.c900),
       ),
     );
   }
@@ -230,7 +231,7 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
       controller: controller,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, size: 20, color: const Color(0xFF673AB7)),
+        prefixIcon: Icon(icon, size: 20, color: BrandColor.c500),
         filled: true,
         fillColor: Colors.white,
         border: OutlineInputBorder(

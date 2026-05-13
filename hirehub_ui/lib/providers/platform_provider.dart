@@ -1,14 +1,20 @@
+import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import '../services/api_service.dart';
 import '../models/platform_settings.dart';
-
 class PlatformProvider with ChangeNotifier {
   final ApiService _apiService = ApiService();
   PlatformSettings? _settings;
+  PlatformSettings? get settings => _settings;
   bool _isLoading = false;
 
-  PlatformSettings? get settings => _settings;
-  bool get isLoading => _isLoading;
+  ThemeMode _themeMode = ThemeMode.light;
+  ThemeMode get themeMode => _themeMode;
+
+  void toggleTheme() {
+    _themeMode = _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+    notifyListeners();
+  }
 
   Future<void> fetchSettings() async {
     _isLoading = true;

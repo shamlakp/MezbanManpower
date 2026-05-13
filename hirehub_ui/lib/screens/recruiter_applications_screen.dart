@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/application_provider.dart';
 import '../models/job_application.dart';
+import 'applicant_detail_screen.dart';
+import '../constants/colors.dart';
 
 class RecruiterApplicationsScreen extends StatefulWidget {
   const RecruiterApplicationsScreen({super.key});
@@ -27,9 +29,9 @@ class _RecruiterApplicationsScreenState extends State<RecruiterApplicationsScree
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final neutralBg = isDark ? const Color(0xFF121212) : const Color(0xFFFAFAFB);
-    final textMain = isDark ? const Color(0xFFF8FAFC) : const Color(0xFF0F172A);
-    final textSub = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+    final neutralBg = isDark ? NeutralColor.c900 : NeutralColor.c50;
+    final textMain = isDark ? NeutralColor.c50 : NeutralColor.c900;
+    final textSub = isDark ? NeutralColor.c400 : NeutralColor.c600;
 
     return Scaffold(
       backgroundColor: neutralBg,
@@ -58,7 +60,7 @@ class _RecruiterApplicationsScreenState extends State<RecruiterApplicationsScree
             child: Consumer<ApplicationProvider>(
               builder: (context, provider, child) {
                 if (provider.isLoading && provider.applications.isEmpty) {
-                  return const Center(child: CircularProgressIndicator(color: Color(0xFF6366F1)));
+                  return const Center(child: CircularProgressIndicator(color: BrandColor.c500));
                 }
 
                 if (provider.errorMessage != null && provider.applications.isEmpty) {
@@ -73,7 +75,7 @@ class _RecruiterApplicationsScreenState extends State<RecruiterApplicationsScree
 
                 return RefreshIndicator(
                   onRefresh: () => provider.fetchApplications(),
-                  color: const Color(0xFF6366F1),
+                  color: const Color(0xFF0EA5E9),
                   child: ListView.separated(
                     padding: const EdgeInsets.fromLTRB(24, 8, 24, 40),
                     itemCount: filteredApps.length,
@@ -117,10 +119,10 @@ class _RecruiterApplicationsScreenState extends State<RecruiterApplicationsScree
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                 decoration: BoxDecoration(
-                  color: isSelected ? (isDark ? Colors.white : const Color(0xFF0F172A)) : (isDark ? const Color(0xFF1E1E1E) : Colors.white),
+                  color: isSelected ? (isDark ? NeutralColor.c50 : NeutralColor.c900) : (isDark ? NeutralColor.c800 : Colors.white),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: isSelected ? (isDark ? Colors.white : const Color(0xFF0F172A)) : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                    color: isSelected ? (isDark ? NeutralColor.c50 : NeutralColor.c900) : (isDark ? NeutralColor.c700 : NeutralColor.c200),
                   ),
                 ),
                 child: Center(
@@ -147,111 +149,106 @@ class _RecruiterApplicationsScreenState extends State<RecruiterApplicationsScree
   }
 
   Widget _buildModernAppCard(BuildContext context, JobApplication app, ApplicationProvider provider, bool isDark, Color textMain, Color textSub) {
-    final cardColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
-    final surfaceColor = isDark ? const Color(0xFF2C2C2C) : const Color(0xFFF8FAFC);
-    final borderColor = isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9);
+    final cardColor = isDark ? NeutralColor.c800 : Colors.white;
+    final surfaceColor = isDark ? NeutralColor.c900 : NeutralColor.c50;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(32),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.2 : 0.02),
-            blurRadius: 30,
-            offset: const Offset(0, 15),
-          ),
-        ],
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => ApplicantDetailScreen(application: app)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 24,
-                      backgroundColor: surfaceColor,
-                      child: Text(
-                        app.applicantName[0].toUpperCase(),
-                        style: const TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF6366F1)),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            app.applicantName,
-                            style: TextStyle(
-                              fontSize: 18, 
-                              fontWeight: FontWeight.w800,
-                              color: textMain,
-                            ),
-                          ),
-                          Text(
-                            app.jobPosition,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: textSub,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    _buildMiniBadge(app.status),
-                  ],
-                ),
-                if (app.notes.isNotEmpty) ...[
-                  const SizedBox(height: 20),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: surfaceColor,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: borderColor),
-                    ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: cardColor,
+          borderRadius: BorderRadius.circular(32),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(isDark ? 0.2 : 0.02),
+              blurRadius: 30,
+              offset: const Offset(0, 15),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 24,
+                    backgroundColor: surfaceColor,
                     child: Text(
-                      app.notes,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569),
-                        height: 1.5,
-                      ),
+                      app.applicantName[0].toUpperCase(),
+                      style: const TextStyle(fontWeight: FontWeight.w800, color: BrandColor.c500),
                     ),
                   ),
-                ],
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    const Icon(Icons.calendar_today_outlined, size: 14, color: Color(0xFF94A3B8)),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Applied ${app.appliedAt.split('T')[0]}',
-                      style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8), fontWeight: FontWeight.w600),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          app.applicantName,
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: textMain, letterSpacing: -0.5),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          app.jobPosition,
+                          style: TextStyle(color: textSub, fontSize: 13, fontWeight: FontWeight.w500),
+                        ),
+                      ],
                     ),
-                    const Spacer(),
-                    if (app.status == 'pending')
-                      Row(
-                        children: [
-                          _buildLinkBtn('Reject', Colors.red, () => _updateStatus(context, app.id, 'rejected', provider)),
-                          const SizedBox(width: 16),
-                          _buildLinkBtn('Shortlist', const Color(0xFF6366F1), () => _updateStatus(context, app.id, 'shortlisted', provider)),
-                        ],
-                      ),
-                  ],
+                  ),
+                  _buildMiniBadge(app.status),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  const Icon(Icons.info_outline_rounded, size: 14, color: BrandColor.c500),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Tap to view full profile & resume',
+                    style: TextStyle(fontSize: 12, color: BrandColor.c500.withOpacity(0.8), fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+              const Divider(height: 32),
+              if (app.notes.isNotEmpty) ...[
+                Text('APPLICANT NOTES', style: TextStyle(color: textSub, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                const SizedBox(height: 8),
+                Text(
+                  app.notes,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 14, color: textMain.withOpacity(0.7), height: 1.5),
                 ),
+                const SizedBox(height: 12),
               ],
-            ),
+              Row(
+                children: [
+                  const Icon(Icons.calendar_today_outlined, size: 14, color: Color(0xFF94A3B8)),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Applied ${app.appliedAt.split('T')[0]}',
+                    style: const TextStyle(fontSize: 12, color: NeutralColor.c400, fontWeight: FontWeight.w600),
+                  ),
+                  const Spacer(),
+                  if (app.status == 'pending')
+                    Row(
+                      children: [
+                        _buildLinkBtn('Reject', DangerColor.c500, () => _updateStatus(context, app.id, 'rejected', provider)),
+                        const SizedBox(width: 16),
+                        _buildLinkBtn('Shortlist', BrandColor.c500, () => _updateStatus(context, app.id, 'shortlisted', provider)),
+                      ],
+                    ),
+                ],
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -269,9 +266,9 @@ class _RecruiterApplicationsScreenState extends State<RecruiterApplicationsScree
   Widget _buildMiniBadge(String status) {
     Color color;
     switch (status.toLowerCase()) {
-      case 'shortlisted': color = const Color(0xFF16A34A); break;
-      case 'rejected': color = const Color(0xFFDC2626); break;
-      default: color = const Color(0xFF2563EB);
+      case 'shortlisted': color = SuccessColor.c500; break;
+      case 'rejected': color = DangerColor.c500; break;
+      default: color = BrandColor.c500;
     }
 
     return Container(

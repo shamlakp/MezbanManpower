@@ -40,6 +40,7 @@ class JobApplicationSerializer(serializers.ModelSerializer):
     job_position = serializers.CharField(source='job.position', read_only=True)
     company_name = serializers.CharField(source='job.company.company_name', read_only=True)
     applicant_name = serializers.CharField(source='applicant.user.username', read_only=True)
+    applicant_details = ApplicantProfileSerializer(source='applicant', read_only=True)
     job_details = serializers.SerializerMethodField()
 
     class Meta:

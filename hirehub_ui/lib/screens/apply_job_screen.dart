@@ -5,6 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:hirehub_ui/models/job_post.dart';
 import 'package:hirehub_ui/services/api_service.dart';
 import 'package:hirehub_ui/utils/url_helper.dart';
+import '../constants/colors.dart';
+import '../widgets/glass_card.dart';
+import '../widgets/success_dialog.dart';
 
 class ApplyJobScreen extends StatefulWidget {
   final JobPost job;
@@ -60,10 +63,10 @@ class _ApplyJobScreenState extends State<ApplyJobScreen> {
         );
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Application submitted successfully!')),
-          );
-          Navigator.pop(context);
+          showDialog(
+            context: context,
+            builder: (_) => const SuccessDialog(message: 'Your application has been sent successfully!'),
+          ).then((_) => Navigator.pop(context));
         }
       } catch (e) {
         if (mounted) {
@@ -93,12 +96,13 @@ class _ApplyJobScreenState extends State<ApplyJobScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: NeutralColor.c50,
       appBar: AppBar(
-        title: const Text('Apply for Job', style: TextStyle(color: Colors.black87)),
+        title: Text('Apply for Job', style: TextStyle(color: NeutralColor.c900, fontWeight: FontWeight.w900)),
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: BackButton(color: Colors.black87, onPressed: () => Navigator.pop(context)),
+        leading: BackButton(color: NeutralColor.c900, onPressed: () => Navigator.pop(context)),
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
@@ -108,44 +112,43 @@ class _ApplyJobScreenState extends State<ApplyJobScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Job Summary Card
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.blue[50],
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.blue[100]!),
-                ),
+              GlassCard(
+                padding: const EdgeInsets.all(20),
+                opacity: 0.8,
+                color: BrandColor.c50,
                 child: Row(
                   children: [
                      Container(
-                      width: 50,
-                      height: 50,
+                      width: 60,
+                      height: 60,
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(12),
                         child: (widget.job.image != null && widget.job.image!.isNotEmpty)
                             ? Image.network(
                                 _getImageUrl(widget.job.image!),
                                 fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) =>
-                                    const Icon(Icons.business, size: 24, color: Colors.grey),
+                                    const Icon(Icons.business, size: 24, color: NeutralColor.c400),
                               )
-                            : const Icon(Icons.business, size: 24, color: Colors.grey),
+                            : const Icon(Icons.business, size: 24, color: NeutralColor.c400),
                       ),
                     ),
                     const SizedBox(width: 16),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          widget.job.position,
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                        ),
-                        Text(widget.job.companyName, style: TextStyle(color: Colors.grey[700])),
-                      ],
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.job.position,
+                            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: NeutralColor.c900),
+                          ),
+                          Text(widget.job.companyName, style: const TextStyle(color: NeutralColor.c600, fontWeight: FontWeight.w600)),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -192,39 +195,48 @@ class _ApplyJobScreenState extends State<ApplyJobScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey[300]!, style: BorderStyle.solid),
-                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.white,
+                  border: Border.all(color: NeutralColor.c200),
+                  borderRadius: BorderRadius.circular(20),
                 ),
                 child: Column(
                   children: [
-                    const Icon(Icons.cloud_upload_outlined, size: 40, color: Colors.grey),
-                    const SizedBox(height: 8),
-                    const Text('Upload your Resume/CV'),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Supported formats: PDF, DOCX',
-                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-                    ),
+                    const Icon(Icons.cloud_upload_outlined, size: 40, color: BrandColor.c500),
                     const SizedBox(height: 12),
+                    const Text('Upload your Resume/CV', style: TextStyle(fontWeight: FontWeight.w700, color: NeutralColor.c900)),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Supported formats: PDF, DOCX',
+                      style: TextStyle(fontSize: 12, color: NeutralColor.c500),
+                    ),
+                    const SizedBox(height: 20),
                     OutlinedButton(
                       onPressed: _pickResume,
-                      child: Text(_resumeFile == null ? 'Browse Files' : 'Change File'),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: BrandColor.c500),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: Text(_resumeFile == null ? 'Browse Files' : 'Change File', style: const TextStyle(color: BrandColor.c500)),
                     ),
                     if (_resumeFile != null) ...[
-                      const SizedBox(height: 12),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.check_circle, color: Colors.green, size: 16),
-                          const SizedBox(width: 8),
-                          Flexible(
-                            child: Text(
-                              _resumeFile!.name,
-                              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green),
-                              overflow: TextOverflow.ellipsis,
+                      const SizedBox(height: 16),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(color: SuccessColor.c50, borderRadius: BorderRadius.circular(8)),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.check_circle_rounded, color: SuccessColor.c500, size: 16),
+                            const SizedBox(width: 8),
+                            Flexible(
+                              child: Text(
+                                _resumeFile!.name,
+                                style: const TextStyle(fontWeight: FontWeight.w700, color: SuccessColor.c700),
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ],
                   ],
@@ -246,11 +258,11 @@ class _ApplyJobScreenState extends State<ApplyJobScreen> {
                 child: ElevatedButton(
                   onPressed: _submitApplication,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0D47A1),
+                    backgroundColor: BrandColor.c500,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    elevation: 0,
                   ),
                   child: _isLoading 
                       ? const SizedBox(
@@ -258,7 +270,7 @@ class _ApplyJobScreenState extends State<ApplyJobScreen> {
                           width: 20,
                           child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                         )
-                      : const Text('Submit Application'),
+                      : const Text('Submit Application', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
                 ),
               ),
             ],
@@ -271,8 +283,13 @@ class _ApplyJobScreenState extends State<ApplyJobScreen> {
   InputDecoration _inputDecoration(String label) {
     return InputDecoration(
       labelText: label,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      labelStyle: const TextStyle(color: NeutralColor.c500, fontWeight: FontWeight.w500),
+      filled: true,
+      fillColor: Colors.white,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: BrandColor.c500, width: 2)),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
     );
   }
 

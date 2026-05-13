@@ -38,7 +38,7 @@ class _HeroSearchBarState extends State<HeroSearchBar> {
           controller: _keywordController,
           decoration: const InputDecoration(
             hintText: 'Search for jobs...',
-            prefixIcon: Icon(Icons.search, color: Color(0xFF673AB7)),
+            prefixIcon: Icon(Icons.search, color: Color(0xFF0EA5E9)),
             border: InputBorder.none,
             contentPadding: EdgeInsets.symmetric(vertical: 15),
           ),

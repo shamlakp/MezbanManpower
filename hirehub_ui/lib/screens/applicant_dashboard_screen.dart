@@ -1,9 +1,12 @@
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../constants/colors.dart';
 import '../services/api_service.dart';
 import 'applicant_applications_screen.dart';
+import 'dashboard_screen.dart';
+import '../widgets/shimmer_loading.dart';
+import '../widgets/glass_card.dart';
 
 class ApplicantDashboardScreen extends StatefulWidget {
   final bool showAppBar;
@@ -18,10 +21,7 @@ class _ApplicantDashboardScreenState extends State<ApplicantDashboardScreen> {
   bool _isLoading = true;
   List<dynamic> _applications = [];
   Map<String, dynamic> _stats = {
-    'total': 0,
-    'pending': 0,
-    'shortlisted': 0,
-    'rejected': 0,
+    'total': 0, 'pending': 0, 'shortlisted': 0, 'rejected': 0,
   };
 
   @override
@@ -36,29 +36,19 @@ class _ApplicantDashboardScreenState extends State<ApplicantDashboardScreen> {
       final response = await api.getApplications();
       if (response.statusCode == 200) {
         final List<dynamic> apps = response.data;
-        int pending = 0;
-        int shortlisted = 0;
-        int rejected = 0;
-
+        int pending = 0, shortlisted = 0, rejected = 0;
         for (var app in apps) {
           final status = (app['status'] ?? '').toString().toLowerCase();
-          if (status == 'pending') {
-            pending++;
-          } else if (status == 'shortlisted' || status == 'accepted') {
-            shortlisted++;
-          } else if (status == 'rejected') {
-            rejected++;
-          }
+          if (status == 'pending')                               pending++;
+          else if (status == 'shortlisted' || status == 'accepted') shortlisted++;
+          else if (status == 'rejected')                         rejected++;
         }
-
         if (mounted) {
           setState(() {
             _applications = apps;
             _stats = {
-              'total': apps.length,
-              'pending': pending,
-              'shortlisted': shortlisted,
-              'rejected': rejected,
+              'total': apps.length, 'pending': pending,
+              'shortlisted': shortlisted, 'rejected': rejected,
             };
             _isLoading = false;
           });
@@ -71,42 +61,57 @@ class _ApplicantDashboardScreenState extends State<ApplicantDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final auth = context.watch<AuthProvider>();
-    final user = auth.userData;
+    final auth     = context.watch<AuthProvider>();
+    final user     = auth.userData;
     final fullName = user?['full_name'] ?? user?['username'] ?? 'Explorer';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFAFAFB),
+      backgroundColor: NeutralColor.c50,
+      appBar: widget.showAppBar
+          ? AppBar(
+              backgroundColor: NeutralColor.c50,
+              elevation: 0,
+              leading: IconButton(
+                icon: Icon(Icons.arrow_back_ios_new_rounded, color: NeutralColor.c900, size: 20),
+                onPressed: () => Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (_) => DashboardScreen()),
+                ),
+              ),
+              title: Text('My Dashboard',
+                  style: TextStyle(color: NeutralColor.c900, fontWeight: FontWeight.w800, fontSize: 18)),
+              centerTitle: true,
+            )
+          : null,
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF6366F1)))
+          ? const Padding(
+              padding: EdgeInsets.all(24.0),
+              child: Column(
+                children: [
+                  ShimmerLoading(height: 100),
+                  SizedBox(height: 28),
+                  Row(children: [Expanded(child: ShimmerLoading(height: 80)), SizedBox(width: 12), Expanded(child: ShimmerLoading(height: 80)), SizedBox(width: 12), Expanded(child: ShimmerLoading(height: 80))]),
+                  SizedBox(height: 36),
+                  ShimmerListLoading(itemCount: 3),
+                ],
+              ),
+            )
           : RefreshIndicator(
               onRefresh: _loadData,
-              color: const Color(0xFF6366F1),
+              color: BrandColor.c500,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 20),
-                    _buildWelcomeHeader(fullName),
-                    const SizedBox(height: 32),
-                    _buildPremiumStats(),
-                    const SizedBox(height: 40),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Recent Applications',
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Color(0xFF0F172A), letterSpacing: -0.5),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ApplicantApplicationsScreen())),
-                          child: const Text('View All', style: TextStyle(color: Color(0xFF6366F1), fontWeight: FontWeight.w700)),
-                        ),
-                      ],
-                    ),
                     const SizedBox(height: 12),
+                    _buildWelcomeHeader(fullName),
+                    const SizedBox(height: 28),
+                    _buildStatsRow(),
+                    const SizedBox(height: 36),
+                    _buildSectionHeader('Recent Applications', onTap: () =>
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const ApplicantApplicationsScreen()))),
+                    const SizedBox(height: 14),
                     if (_applications.isEmpty)
                       _buildEmptyState()
                     else
@@ -114,13 +119,11 @@ class _ApplicantDashboardScreenState extends State<ApplicantDashboardScreen> {
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: _applications.length > 3 ? 3 : _applications.length,
-                        separatorBuilder: (context, index) => const SizedBox(height: 16),
-                        itemBuilder: (context, index) {
-                          return _buildModernAppCard(_applications[index]);
-                        },
+                        separatorBuilder: (_, __) => const SizedBox(height: 12),
+                        itemBuilder: (_, i) => _buildAppCard(_applications[i]),
                       ),
-                    const SizedBox(height: 40),
-                    _buildDiscoverySection(),
+                    const SizedBox(height: 36),
+                    _buildDiscoveryBanner(),
                     const SizedBox(height: 100),
                   ],
                 ),
@@ -129,139 +132,146 @@ class _ApplicantDashboardScreenState extends State<ApplicantDashboardScreen> {
     );
   }
 
+  // ── Welcome header ─────────────────────────────────────────
   Widget _buildWelcomeHeader(String name) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         RichText(
           text: TextSpan(
-            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Color(0xFF0F172A), letterSpacing: -1),
+            style: TextStyle(fontSize: 28, color: NeutralColor.c900, letterSpacing: -1),
             children: [
-              const TextSpan(text: 'Hello, '),
-              TextSpan(text: name, style: const TextStyle(color: Color(0xFF6366F1))),
+              const TextSpan(text: 'Hello, ', style: TextStyle(fontWeight: FontWeight.w700)),
+              TextSpan(text: name, style: TextStyle(color: NeutralColor.c500, fontWeight: FontWeight.w400)),
             ],
           ),
         ),
         const SizedBox(height: 4),
-        const Text(
-          'Your career journey starts here.',
-          style: TextStyle(fontSize: 15, color: Color(0xFF64748B), fontWeight: FontWeight.w500),
-        ),
+        Text('Your career journey starts here.',
+            style: TextStyle(fontSize: 15, color: NeutralColor.c600, fontWeight: FontWeight.w500)),
       ],
     );
   }
 
-  Widget _buildPremiumStats() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(32),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 30, offset: const Offset(0, 15)),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _buildStatIndicator('Total', _stats['total'].toString(), const Color(0xFF6366F1)),
-          _buildStatIndicator('Pending', _stats['pending'].toString(), const Color(0xFFF59E0B)),
-          _buildStatIndicator('Shortlisted', _stats['shortlisted'].toString(), const Color(0xFF10B981)),
-        ],
-      ),
+  // ── Stats row ──────────────────────────────────────────────
+  Widget _buildStatsRow() {
+    final items = [
+      ('Total',      _stats['total'].toString(),       BrandColor.c500,   BrandColor.c50),
+      ('Pending',    _stats['pending'].toString(),     WarningColor.c600, WarningColor.c50),
+      ('Shortlisted',_stats['shortlisted'].toString(), SuccessColor.c600, SuccessColor.c50),
+    ];
+    return Row(
+      children: items.map((e) => Expanded(
+        child: Padding(
+          padding: EdgeInsets.only(right: e.$1 == 'Shortlisted' ? 0 : 12),
+          child: GlassCard(
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            opacity: 0.1,
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            child: Column(
+              children: [
+                Text(e.$2, style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: e.$3)),
+                const SizedBox(height: 4),
+                Text(e.$1, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: NeutralColor.c500)),
+              ],
+            ),
+          ),
+        ),
+      )).toList(),
     );
   }
 
-  Widget _buildStatIndicator(String label, String value, Color color) {
-    return Column(
+  // ── Section header ─────────────────────────────────────────
+  Widget _buildSectionHeader(String title, {VoidCallback? onTap}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          value,
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: color),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF64748B)),
+        Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: NeutralColor.c900, letterSpacing: -0.3)),
+        TextButton(
+          onPressed: onTap,
+          child: Text('View All', style: TextStyle(color: BrandColor.c500, fontWeight: FontWeight.w700)),
         ),
       ],
     );
   }
 
-  Widget _buildModernAppCard(dynamic app) {
-    final job = app['job_details'] ?? {};
-    final title = job['title'] ?? 'Position';
+  // ── Application card ───────────────────────────────────────
+  Widget _buildAppCard(dynamic app) {
+    final job     = app['job_details'] ?? {};
+    final title   = job['title'] ?? 'Position';
     final company = job['company_name'] ?? 'Organization';
-    final status = (app['status'] ?? 'Pending').toString().toUpperCase();
+    final status  = (app['status'] ?? 'Pending').toString().toUpperCase();
 
-    Color statusColor;
+    Color statusFg, statusBg;
     if (status.contains('SHORTLISTED') || status.contains('ACCEPTED')) {
-      statusColor = const Color(0xFF10B981);
+      statusFg = SuccessColor.c600; statusBg = SuccessColor.c50;
     } else if (status.contains('REJECTED')) {
-      statusColor = const Color(0xFFEF4444);
+      statusFg = DangerColor.c500;  statusBg = DangerColor.c50;
     } else {
-      statusColor = const Color(0xFF6366F1);
+      statusFg = BrandColor.c500;   statusBg = BrandColor.c50;
     }
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFF1F5F9)),
+        color: NeutralColor.c100,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: NeutralColor.c200),
       ),
       child: Row(
         children: [
           Container(
-            width: 48, height: 48,
-            decoration: BoxDecoration(color: const Color(0xFFF8FAFC), borderRadius: BorderRadius.circular(16)),
-            child: const Icon(Icons.business_center_outlined, color: Color(0xFF6366F1), size: 24),
+            width: 46, height: 46,
+            decoration: BoxDecoration(color: BrandColor.c50, borderRadius: BorderRadius.circular(14)),
+            child: Icon(Icons.business_center_outlined, color: BrandColor.c500, size: 22),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: Color(0xFF1E293B))),
-                Text(company, style: const TextStyle(color: Color(0xFF64748B), fontSize: 13, fontWeight: FontWeight.w500)),
+                Text(title, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: NeutralColor.c900)),
+                Text(company, style: TextStyle(color: NeutralColor.c600, fontSize: 13, fontWeight: FontWeight.w500)),
               ],
             ),
           ),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(color: statusColor.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-            child: Text(status, style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.w900)),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(color: statusBg, borderRadius: BorderRadius.circular(8)),
+            child: Text(status, style: TextStyle(color: statusFg, fontSize: 10, fontWeight: FontWeight.w900)),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildDiscoverySection() {
-    return Container(
-      width: double.infinity,
+  // ── Discovery banner ───────────────────────────────────────
+  Widget _buildDiscoveryBanner() {
+    return GlassCard(
       padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF4F46E5)]),
-        borderRadius: BorderRadius.circular(32),
-        boxShadow: [
-          BoxShadow(color: const Color(0xFF6366F1).withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 10)),
-        ],
-      ),
+      color: BrandColor.c50,
+      opacity: 0.5,
+      borderRadius: BorderRadius.circular(28),
+      border: Border.all(color: BrandColor.c200.withOpacity(0.5)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Discover New Roles', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900)),
-          const SizedBox(height: 8),
-          const Text('Thousands of jobs are waiting for you.', style: TextStyle(color: Colors.white70, fontSize: 14)),
-          const SizedBox(height: 20),
+          Icon(Icons.explore_rounded, color: BrandColor.c500, size: 32),
+          const SizedBox(height: 12),
+          Text('Discover New Roles',
+              style: TextStyle(color: NeutralColor.c900, fontSize: 18, fontWeight: FontWeight.w900)),
+          const SizedBox(height: 6),
+          Text('Thousands of jobs are waiting for you.',
+              style: TextStyle(color: NeutralColor.c600, fontSize: 13)),
+          const SizedBox(height: 18),
           ElevatedButton(
             onPressed: widget.onBrowseJobs,
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: const Color(0xFF6366F1),
+              backgroundColor: BrandColor.c500,
+              foregroundColor: NeutralColor.c50,
               elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
             child: const Text('Browse Jobs', style: TextStyle(fontWeight: FontWeight.w800)),
@@ -271,16 +281,22 @@ class _ApplicantDashboardScreenState extends State<ApplicantDashboardScreen> {
     );
   }
 
+  // ── Empty state ────────────────────────────────────────────
   Widget _buildEmptyState() {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 40),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(32), border: Border.all(color: const Color(0xFFF1F5F9))),
-      child: const Column(
+      decoration: BoxDecoration(
+        color: NeutralColor.c100,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: NeutralColor.c200),
+      ),
+      child: Column(
         children: [
-          Icon(Icons.inbox_outlined, size: 48, color: Color(0xFFE2E8F0)),
-          SizedBox(height: 12),
-          Text('No applications yet', style: TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF94A3B8))),
+          Icon(Icons.inbox_outlined, size: 48, color: NeutralColor.c400),
+          const SizedBox(height: 12),
+          Text('No applications yet',
+              style: TextStyle(fontWeight: FontWeight.w700, color: NeutralColor.c500)),
         ],
       ),
     );

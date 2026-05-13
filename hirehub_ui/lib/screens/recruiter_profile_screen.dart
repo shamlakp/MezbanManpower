@@ -89,7 +89,7 @@ class _RecruiterProfileScreenState extends State<RecruiterProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const primary = Color(0xFF6366F1);
+    const primary = Color(0xFF0EA5E9);
     
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFB),
@@ -196,11 +196,11 @@ class _RecruiterProfileScreenState extends State<RecruiterProfileScreen> {
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(color: Color(0xFF94A3B8), fontWeight: FontWeight.w500),
-        prefixIcon: Icon(icon, color: const Color(0xFF6366F1), size: 20),
+        prefixIcon: Icon(icon, color: const Color(0xFF0EA5E9), size: 20),
         filled: true,
         fillColor: Colors.white,
         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2)),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFF0EA5E9), width: 2)),
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
       ),
     );

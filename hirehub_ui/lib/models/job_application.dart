@@ -7,6 +7,7 @@ class JobApplication {
   final String status;
   final String appliedAt;
   final String notes;
+  final Map<String, dynamic>? applicantDetails;
 
   JobApplication({
     required this.id,
@@ -17,6 +18,7 @@ class JobApplication {
     required this.status,
     required this.appliedAt,
     this.notes = '',
+    this.applicantDetails,
   });
 
   factory JobApplication.fromJson(Map<String, dynamic> json) {
@@ -29,6 +31,7 @@ class JobApplication {
       status: json['status'] ?? 'pending',
       appliedAt: json['applied_at'] ?? '',
       notes: json['notes'] ?? '',
+      applicantDetails: json['applicant_details'],
     );
   }
 }
