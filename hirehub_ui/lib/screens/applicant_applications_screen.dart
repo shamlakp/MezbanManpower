@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../providers/application_provider.dart';
 import '../models/job_application.dart';
 import '../constants/colors.dart';
+import '../widgets/custom_button.dart';
+import '../widgets/glass_card.dart';
 
 class ApplicantApplicationsScreen extends StatefulWidget {
   const ApplicantApplicationsScreen({super.key});
@@ -46,10 +48,12 @@ class _ApplicantApplicationsScreenState extends State<ApplicantApplicationsScree
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(provider.errorMessage!, style: const TextStyle(color: DangerColor.c500)),
-                  ElevatedButton(
+                  CustomButton(
                     onPressed: () => provider.fetchApplications(),
-                    child: const Text('Retry'),
-                    style: ElevatedButton.styleFrom(backgroundColor: BrandColor.c500, foregroundColor: NeutralColor.c50),
+                    text: 'Retry',
+                    buttonBgColor: BrandColor.c500,
+                    fontColor: NeutralColor.c50,
+                    width: 120,
                   ),
                 ],
               ),
@@ -77,10 +81,11 @@ class _ApplicantApplicationsScreenState extends State<ApplicantApplicationsScree
   }
 
   Widget _buildApplicationCard(BuildContext context, JobApplication app) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: GlassCard(
         padding: const EdgeInsets.all(16.0),
+        borderRadius: BorderRadius.circular(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

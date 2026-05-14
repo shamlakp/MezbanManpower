@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/job_post.dart';
 import '../utils/url_helper.dart';
+import 'custom_button.dart';
 
 class JobGridCard extends StatelessWidget {
   final JobPost job;
@@ -169,17 +170,16 @@ class JobGridCard extends StatelessWidget {
   }
 
   Widget _buildViewButton(VoidCallback? onTap) {
-    return ElevatedButton(
+    return CustomButton(
       onPressed: onTap,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFF0EA5E9),
-        foregroundColor: Colors.white,
-        elevation: 0,
-        minimumSize: Size.zero,
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      ),
-      child: const Text('View', style: TextStyle(fontSize: 11)),
+      text: 'View',
+      buttonBgColor: const Color(0xFF0EA5E9),
+      fontColor: Colors.white,
+      elevation: 0,
+      height: 30,
+      width: 60,
+      textStyle: const TextStyle(fontSize: 11),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
     );
   }
 

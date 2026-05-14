@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../utils/url_helper.dart';
 import '../constants/colors.dart';
+import '../widgets/custom_button.dart';
+import '../widgets/custom_textformfield.dart';
 
 class CompanyProfileScreen extends StatefulWidget {
   final Map<String, dynamic>? company;
@@ -185,22 +187,17 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
                       builder: (context, auth, _) {
                         return SizedBox(
                           width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: auth.isLoading ? null : _save,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: BrandColor.c500,
-                              foregroundColor: NeutralColor.c50,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                            ),
-                            child: auth.isLoading
-                                ? const SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                                  )
-                                : const Text('Save Profile', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                          ),
+                          child: auth.isLoading
+                              ? const Center(child: CircularProgressIndicator())
+                              : CustomButton(
+                                  onPressed: _save,
+                                  buttonBgColor: BrandColor.c500,
+                                  fontColor: NeutralColor.c50,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                  text: 'Save Profile',
+                                  textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                                ),
                         );
                       },
                     ),
@@ -227,22 +224,20 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
     required IconData icon,
     int maxLines = 1,
   }) {
-    return TextFormField(
+    return CustomTextFormField(
+      size: MediaQuery.of(context).size,
       controller: controller,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon, size: 20, color: BrandColor.c500),
-        filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.grey[300]!),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.grey[300]!),
-        ),
-        alignLabelWithHint: maxLines > 1,
+      hintText: label,
+      hintStyle: TextStyle(color: NeutralColor.c500, fontWeight: FontWeight.w500),
+      prefixIcon: Icon(icon, size: 20, color: BrandColor.c500),
+      fillColor: Colors.white,
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: Colors.grey[300]!),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: BrandColor.c500, width: 1.5),
       ),
       maxLines: maxLines,
       validator: (value) => value!.isEmpty ? 'This field is required' : null,

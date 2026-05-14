@@ -7,6 +7,7 @@ import 'applicant_applications_screen.dart';
 import 'dashboard_screen.dart';
 import '../widgets/shimmer_loading.dart';
 import '../widgets/glass_card.dart';
+import '../widgets/custom_button.dart';
 
 class ApplicantDashboardScreen extends StatefulWidget {
   final bool showAppBar;
@@ -265,16 +266,13 @@ class _ApplicantDashboardScreenState extends State<ApplicantDashboardScreen> {
           Text('Thousands of jobs are waiting for you.',
               style: TextStyle(color: NeutralColor.c600, fontSize: 13)),
           const SizedBox(height: 18),
-          ElevatedButton(
+          CustomButton(
             onPressed: widget.onBrowseJobs,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: BrandColor.c500,
-              foregroundColor: NeutralColor.c50,
-              elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            ),
-            child: const Text('Browse Jobs', style: TextStyle(fontWeight: FontWeight.w800)),
+            buttonBgColor: BrandColor.c500,
+            fontColor: NeutralColor.c50,
+            elevation: 0,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            text: 'Browse Jobs',
           ),
         ],
       ),

@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../constants/colors.dart';
 import '../widgets/glass_card.dart';
+import '../widgets/custom_button.dart';
+import '../widgets/custom_textformfield.dart';
 
 class ApplicantProfileScreen extends StatefulWidget {
   const ApplicantProfileScreen({super.key});
@@ -177,18 +179,17 @@ class _ApplicantProfileScreenState extends State<ApplicantProfileScreen> {
               SizedBox(
                 width: double.infinity,
                 height: 56,
-                child: ElevatedButton(
-                  onPressed: _isSaving ? null : _save,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primary,
-                    foregroundColor: NeutralColor.c50,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  ),
-                  child: _isSaving
-                      ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: NeutralColor.c50, strokeWidth: 2))
-                      : const Text('Save Changes', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
-                ),
+                child: _isSaving
+                    ? const Center(child: CircularProgressIndicator())
+                    : CustomButton(
+                        onPressed: _save,
+                        buttonBgColor: primary,
+                        fontColor: NeutralColor.c50,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        text: 'Save Changes',
+                        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: NeutralColor.c50),
+                      ),
               ),
               const SizedBox(height: 40),
             ],
@@ -215,21 +216,19 @@ class _ApplicantProfileScreenState extends State<ApplicantProfileScreen> {
     int maxLines = 1,
     TextInputType? keyboardType,
   }) {
-    return TextFormField(
+    return CustomTextFormField(
+      size: MediaQuery.of(context).size,
       controller: controller,
       maxLines: maxLines,
       keyboardType: keyboardType,
       style: const TextStyle(fontWeight: FontWeight.w600, color: NeutralColor.c900),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(color: NeutralColor.c400, fontWeight: FontWeight.w500),
-        prefixIcon: Icon(icon, color: BrandColor.c500, size: 20),
-        filled: true,
-        fillColor: Colors.white,
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: NeutralColor.c200)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: BrandColor.c500, width: 2)),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-      ),
+      hintText: label,
+      hintStyle: const TextStyle(color: NeutralColor.c400, fontWeight: FontWeight.w500),
+      prefixIcon: Icon(icon, color: BrandColor.c500, size: 20),
+      fillColor: Colors.white,
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: NeutralColor.c200)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: BrandColor.c500, width: 2)),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
     );
   }
 }

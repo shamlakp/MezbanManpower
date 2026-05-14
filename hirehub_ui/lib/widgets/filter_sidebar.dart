@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/job_provider.dart';
+import 'custom_button.dart';
 
 class FilterSidebar extends StatefulWidget {
   const FilterSidebar({super.key});
@@ -186,16 +187,15 @@ class _FilterSidebarState extends State<FilterSidebar> {
               padding: const EdgeInsets.all(20),
               child: SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
+                child: CustomButton(
                   onPressed: _applyFilters,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0EA5E9),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    elevation: 0,
-                  ),
-                  child: const Text('Apply Filters', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  text: 'Apply Filters',
+                  buttonBgColor: const Color(0xFF0EA5E9),
+                  fontColor: Colors.white,
+                  elevation: 0,
+                  height: 50,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
                 ),
               ),
             ),

@@ -9,6 +9,7 @@ import 'apply_job_screen.dart';
 import 'login_screen.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/modern_headline.dart';
+import '../widgets/custom_button.dart';
 
 
 class JobDetailScreen extends StatelessWidget {
@@ -167,7 +168,7 @@ class JobDetailScreen extends StatelessWidget {
         ),
         child: Consumer<AuthProvider>(
           builder: (context, auth, child) {
-            return ElevatedButton(
+            return CustomButton(
               onPressed: () {
                 if (!auth.isAuthenticated) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -184,14 +185,11 @@ class JobDetailScreen extends StatelessWidget {
                   MaterialPageRoute(builder: (_) => ApplyJobScreen(job: job)),
                 );
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: BrandColor.c500,
-                foregroundColor: NeutralColor.c50,
-                padding: const EdgeInsets.symmetric(vertical: 18),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                elevation: 0,
-              ),
-              child: const Text('Apply for this Job', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+              buttonBgColor: BrandColor.c500,
+              fontColor: NeutralColor.c50,
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              text: 'Apply for this Job',
             );
           },
         ),

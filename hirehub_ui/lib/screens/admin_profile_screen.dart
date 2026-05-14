@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../utils/url_helper.dart';
 import 'login_screen.dart';
+import '../widgets/custom_button.dart';
 
 class AdminProfileScreen extends StatelessWidget {
   const AdminProfileScreen({super.key});
@@ -96,16 +97,14 @@ class AdminProfileScreen extends StatelessWidget {
                 const SizedBox(height: 32),
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton.icon(
+                  child: CustomButton(
                     onPressed: () => _logout(context),
-                    icon: const Icon(Icons.logout),
-                    label: const Text('Logout'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.redAccent,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
+                    buttonBgColor: Colors.redAccent,
+                    fontColor: Colors.white,
+                    height: 56,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    text: 'Logout',
+                    textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                 ),
               ],

@@ -8,6 +8,8 @@ import 'package:hirehub_ui/utils/url_helper.dart';
 import '../constants/colors.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/success_dialog.dart';
+import '../widgets/custom_button.dart';
+import '../widgets/custom_textformfield.dart';
 
 class ApplyJobScreen extends StatefulWidget {
   final JobPost job;
@@ -161,24 +163,27 @@ class _ApplyJobScreenState extends State<ApplyJobScreen> {
               ),
               const SizedBox(height: 16),
 
-              TextFormField(
+              CustomTextFormField(
+                size: MediaQuery.of(context).size,
                 controller: _nameController,
-                decoration: _inputDecoration('Full Name'),
+                hintText: 'Full Name',
                 validator: (value) => value!.isEmpty ? 'Please enter your name' : null,
               ),
               const SizedBox(height: 16),
               
-              TextFormField(
+              CustomTextFormField(
+                size: MediaQuery.of(context).size,
                 controller: _emailController,
-                decoration: _inputDecoration('Email Address'),
+                hintText: 'Email Address',
                 keyboardType: TextInputType.emailAddress,
                 validator: (value) => value!.contains('@') ? null : 'Please enter a valid email',
               ),
               const SizedBox(height: 16),
 
-              TextFormField(
+              CustomTextFormField(
+                size: MediaQuery.of(context).size,
                 controller: _phoneController,
-                decoration: _inputDecoration('Phone Number'),
+                hintText: 'Phone Number',
                 keyboardType: TextInputType.phone,
                 validator: (value) => value!.isEmpty ? 'Please enter your phone number' : null,
               ),
@@ -244,34 +249,27 @@ class _ApplyJobScreenState extends State<ApplyJobScreen> {
               ),
 
               const SizedBox(height: 24),
-              TextFormField(
+              CustomTextFormField(
+                size: MediaQuery.of(context).size,
                 controller: _coverLetterController,
-                decoration: _inputDecoration('Cover Letter (Optional)').copyWith(
-                  alignLabelWithHint: true,
-                ),
+                hintText: 'Cover Letter (Optional)',
                 maxLines: 5,
               ),
 
               const SizedBox(height: 32),
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _submitApplication,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: BrandColor.c500,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 18),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    elevation: 0,
-                  ),
-                  child: _isLoading 
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                        )
-                      : const Text('Submit Application', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
-                ),
+                child: _isLoading 
+                    ? const Center(child: CircularProgressIndicator())
+                    : CustomButton(
+                        onPressed: _submitApplication,
+                        buttonBgColor: BrandColor.c500,
+                        fontColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        elevation: 0,
+                        text: 'Submit Application',
+                        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white),
+                      ),
               ),
             ],
           ),

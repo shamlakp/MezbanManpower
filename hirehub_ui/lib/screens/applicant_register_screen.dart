@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../constants/colors.dart';
 import 'login_screen.dart';
+import '../widgets/custom_button.dart';
+import '../widgets/custom_textformfield.dart';
 
 class ApplicantRegisterScreen extends StatefulWidget {
   const ApplicantRegisterScreen({super.key});
@@ -171,22 +173,17 @@ class _ApplicantRegisterScreenState extends State<ApplicantRegisterScreen> {
                       builder: (_, auth, __) => SizedBox(
                         width: double.infinity,
                         height: 54,
-                        child: ElevatedButton(
-                          onPressed: auth.isLoading ? null : _handleAction,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: IndigoColor.c500,
-                            foregroundColor: NeutralColor.c50,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                          ),
-                          child: auth.isLoading
-                              ? const SizedBox(width: 22, height: 22,
-                                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                              : Text(
-                                  !_otpSent ? 'Send OTP' : (!_otpVerified ? 'Verify OTP' : 'Create Account'),
-                                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
-                                ),
-                        ),
+                        child: auth.isLoading
+                            ? const Center(child: CircularProgressIndicator())
+                            : CustomButton(
+                                onPressed: _handleAction,
+                                buttonBgColor: IndigoColor.c500,
+                                fontColor: NeutralColor.c50,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                text: !_otpSent ? 'Send OTP' : (!_otpVerified ? 'Verify OTP' : 'Create Account'),
+                                textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: NeutralColor.c50),
+                              ),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -222,32 +219,28 @@ class _ApplicantRegisterScreenState extends State<ApplicantRegisterScreen> {
     TextInputType? keyboardType,
     String? Function(String?)? validator,
   }) {
-    return TextFormField(
+    return CustomTextFormField(
+      size: MediaQuery.of(context).size,
       controller: controller,
-      enabled: enabled,
+      readOnly: !enabled,
       obscureText: isPassword && obscure,
       keyboardType: keyboardType,
       validator: validator,
       style: TextStyle(fontWeight: FontWeight.w600, color: enabled ? NeutralColor.c900 : NeutralColor.c500),
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon, color: enabled ? IndigoColor.c500 : NeutralColor.c400, size: 20),
-        suffixIcon: isPassword
-            ? IconButton(
-                icon: Icon(obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                    color: NeutralColor.c500, size: 20),
-                onPressed: onToggle,
-              )
-            : null,
-        filled: true,
-        fillColor: enabled ? NeutralColor.c100 : NeutralColor.c200,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: NeutralColor.c200)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: NeutralColor.c200)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: IndigoColor.c500, width: 1.5)),
-        errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: DangerColor.c500)),
-        disabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: NeutralColor.c200)),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-      ),
+      hintText: label,
+      hintStyle: TextStyle(color: NeutralColor.c500, fontWeight: FontWeight.w500),
+      prefixIcon: Icon(icon, color: enabled ? IndigoColor.c500 : NeutralColor.c400, size: 20),
+      suffixIcon: isPassword
+          ? IconButton(
+              icon: Icon(obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                  color: NeutralColor.c500, size: 20),
+              onPressed: onToggle,
+            )
+          : null,
+      fillColor: enabled ? NeutralColor.c100 : NeutralColor.c200,
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: NeutralColor.c200)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: IndigoColor.c500, width: 1.5)),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
     );
   }
 }

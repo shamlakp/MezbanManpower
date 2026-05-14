@@ -8,6 +8,8 @@ import '../providers/job_provider.dart';
 import '../providers/auth_provider.dart';
 import '../constants/colors.dart';
 import '../widgets/success_dialog.dart';
+import '../widgets/custom_button.dart';
+import '../widgets/custom_textformfield.dart';
 
 class CreateJobScreen extends StatefulWidget {
   final int? selectedCompanyId;
@@ -271,23 +273,17 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
               _buildField(controller: _benefitsController, label: 'Other Benefits', hint: 'e.g. Insurance, Transport', icon: Icons.card_giftcard, maxLines: 2),
 
               const SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: _isSubmitting ? null : _submit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: BrandColor.c500,
-                  foregroundColor: NeutralColor.c50,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  elevation: 0,
-                ),
-                child: _isSubmitting
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(color: NeutralColor.c50, strokeWidth: 2),
-                      )
-                    : const Text('Post Job', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              ),
+              _isSubmitting
+                  ? const Center(child: CircularProgressIndicator())
+                  : CustomButton(
+                      onPressed: _submit,
+                      buttonBgColor: BrandColor.c500,
+                      fontColor: NeutralColor.c50,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      text: 'Post Job',
+                      textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
             ],
           ),
         ),
@@ -313,27 +309,20 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
     TextInputType keyboardType = TextInputType.text,
     int maxLines = 1,
   }) {
-    return TextFormField(
+    return CustomTextFormField(
+      size: MediaQuery.of(context).size,
       controller: controller,
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        prefixIcon: Icon(icon, size: 20, color: BrandColor.c500),
-        filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: NeutralColor.c200),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: NeutralColor.c200),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: BrandColor.c500, width: 1.5),
-        ),
-        alignLabelWithHint: maxLines > 1,
+      hintText: label,
+      hintStyle: TextStyle(color: NeutralColor.c500, fontWeight: FontWeight.w500),
+      prefixIcon: Icon(icon, size: 20, color: BrandColor.c500),
+      fillColor: Colors.white,
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: NeutralColor.c200),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: BrandColor.c500, width: 1.5),
       ),
       keyboardType: keyboardType,
       maxLines: maxLines,

@@ -12,6 +12,7 @@ import '../utils/url_helper.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'login_screen.dart';
 import 'applicant_profile_screen.dart';
+import '../widgets/custom_button.dart';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'job_detail_screen.dart';
@@ -690,15 +691,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(height: 16),
           const Text('Please sign in to view this page'),
           const SizedBox(height: 16),
-          ElevatedButton(
+          CustomButton(
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const LoginScreen()),
             ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: BrandColor.c500,
-              foregroundColor: NeutralColor.c50,
-            ),
-            child: const Text('Sign In'),
+            text: 'Sign In',
+            buttonBgColor: BrandColor.c500,
+            fontColor: NeutralColor.c50,
+            width: 150,
+            height: 45,
           ),
         ],
       ),
@@ -781,9 +782,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
               children: [
                 const Icon(Icons.error_outline, size: 64, color: Colors.red),
                 Text(provider.errorMessage!),
-                ElevatedButton(
+                CustomButton(
                   onPressed: () => provider.fetchJobs(),
-                  child: const Text('Try Again'),
+                  buttonBgColor: BrandColor.c500,
+                  fontColor: Colors.white,
+                  text: 'Try Again',
+                  width: 150,
+                  height: 45,
                 ),
               ],
             ),

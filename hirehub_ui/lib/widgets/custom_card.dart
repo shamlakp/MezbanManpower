@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:troobot_mobile/core/utils/text_styles.dart';
+import 'package:hirehub_ui/constants/text_styles.dart';
 
 class CustomCard extends StatelessWidget {
   const CustomCard(this.lst, {required this.title, super.key});

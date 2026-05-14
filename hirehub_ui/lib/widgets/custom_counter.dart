@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
-import 'package:troobot_mobile/core/utils/color_plt/colors.dart';
-import 'package:troobot_mobile/core/utils/text_styles.dart';
+import 'package:hirehub_ui/constants/colors.dart';
+import 'package:hirehub_ui/constants/text_styles.dart';
 
 class CustomCounter extends StatelessWidget {
   final String label;

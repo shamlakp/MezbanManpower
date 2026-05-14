@@ -6,7 +6,9 @@ import 'dashboard_screen.dart';
 import 'applicant_dashboard_screen.dart';
 import 'register_screen.dart';
 import 'applicant_register_screen.dart';
-
+import '../widgets/mezban_logo.dart';
+import '../widgets/custom_button.dart';
+import '../widgets/custom_textformfield.dart';
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -199,22 +201,8 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 20),
 
               // ── Logo icon ─────────────────────────────────────
-              Center(
-                child: Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: BrandColor.c50,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: BrandColor.c200.withOpacity(0.4),
-                        blurRadius: 24,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
-                  ),
-                  child: Icon(Icons.lock_person_rounded, size: 48, color: BrandColor.c500),
-                ),
+              const Center(
+                child: MezbanLogo(fontSize: 48, showText: false),
               ),
               const SizedBox(height: 40),
 
@@ -276,26 +264,15 @@ class _LoginScreenState extends State<LoginScreen> {
                       width: double.infinity,
                       height: 56,
                       child: Consumer<AuthProvider>(
-                        builder: (context, auth, _) => ElevatedButton(
+                        builder: (context, auth, _) => CustomButton(
                           onPressed: auth.isLoading ? null : _submit,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: BrandColor.c500,
-                            foregroundColor: NeutralColor.c50,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          ),
-                          child: auth.isLoading
-                              ? const SizedBox(
-                                  width: 24, height: 24,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : const Text(
-                                  'Sign In',
-                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
-                                ),
+                          text: 'Sign In',
+                          buttonBgColor: BrandColor.c500,
+                          fontColor: NeutralColor.c50,
+                          elevation: 0,
+                          height: 56,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: NeutralColor.c50),
                         ),
                       ),
                     ),
@@ -339,45 +316,35 @@ class _LoginScreenState extends State<LoginScreen> {
     bool isPassword = false,
     String? Function(String?)? validator,
   }) {
-    return TextFormField(
+    return CustomTextFormField(
+      size: MediaQuery.of(context).size,
       controller: controller,
       obscureText: isPassword && _obscurePassword,
       validator: validator,
       style: TextStyle(fontWeight: FontWeight.w600, color: NeutralColor.c900),
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: TextStyle(color: NeutralColor.c500, fontWeight: FontWeight.w500),
-        prefixIcon: Icon(icon, color: BrandColor.c500, size: 20),
-        suffixIcon: isPassword
-            ? IconButton(
-                icon: Icon(
-                  _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                  color: NeutralColor.c500,
-                  size: 20,
-                ),
-                onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-              )
-            : null,
-        filled: true,
-        fillColor: NeutralColor.c100,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: NeutralColor.c200),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: NeutralColor.c200),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: BrandColor.c500, width: 1.5),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: DangerColor.c500),
-        ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+      hintText: hint,
+      hintStyle: TextStyle(color: NeutralColor.c500, fontWeight: FontWeight.w500),
+      prefixIcon: Icon(icon, color: BrandColor.c500, size: 20),
+      suffixIcon: isPassword
+          ? IconButton(
+              icon: Icon(
+                _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                color: NeutralColor.c500,
+                size: 20,
+              ),
+              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+            )
+          : null,
+      fillColor: NeutralColor.c100,
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: NeutralColor.c200),
       ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: BrandColor.c500, width: 1.5),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
     );
   }
 }

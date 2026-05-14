@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:icons_plus/icons_plus.dart';
-import 'package:troobot_mobile/core/utils/color_plt/colors.dart';
+import 'package:hirehub_ui/constants/colors.dart';
 
 class FavouriteButton extends StatelessWidget {
   final Color? color;

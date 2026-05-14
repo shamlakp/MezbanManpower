@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../utils/url_helper.dart';
+import '../widgets/custom_button.dart';
+import '../widgets/custom_textformfield.dart';
 
 class RecruiterProfileScreen extends StatefulWidget {
   const RecruiterProfileScreen({super.key});
@@ -155,18 +157,17 @@ class _RecruiterProfileScreenState extends State<RecruiterProfileScreen> {
                     SizedBox(
                       width: double.infinity,
                       height: 56,
-                      child: ElevatedButton(
-                        onPressed: _isSaving ? null : _save,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: primary,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        ),
-                        child: _isSaving
-                            ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                            : const Text('Save Profile', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
-                      ),
+                      child: _isSaving
+                          ? const Center(child: CircularProgressIndicator())
+                          : CustomButton(
+                              onPressed: _save,
+                              buttonBgColor: primary,
+                              fontColor: Colors.white,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              text: 'Save Profile',
+                              textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white),
+                            ),
                     ),
                     const SizedBox(height: 40),
                   ],
@@ -187,22 +188,20 @@ class _RecruiterProfileScreenState extends State<RecruiterProfileScreen> {
   }
 
   Widget _buildModernField({required TextEditingController controller, required String label, required IconData icon, int maxLines = 1, TextInputType? keyboardType}) {
-    return TextFormField(
+    return CustomTextFormField(
+      size: MediaQuery.of(context).size,
       controller: controller,
       maxLines: maxLines,
       keyboardType: keyboardType,
       validator: (v) => v!.isEmpty ? 'Required' : null,
       style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(color: Color(0xFF94A3B8), fontWeight: FontWeight.w500),
-        prefixIcon: Icon(icon, color: const Color(0xFF0EA5E9), size: 20),
-        filled: true,
-        fillColor: Colors.white,
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFF0EA5E9), width: 2)),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-      ),
+      hintText: label,
+      hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontWeight: FontWeight.w500),
+      prefixIcon: Icon(icon, color: const Color(0xFF0EA5E9), size: 20),
+      fillColor: Colors.white,
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFF0EA5E9), width: 2)),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
     );
   }
 

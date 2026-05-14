@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:troobot_mobile/core/utils/text_styles.dart';
+import 'package:hirehub_ui/constants/text_styles.dart';
 
 class CustomTextFormField extends StatelessWidget {
   const CustomTextFormField(
