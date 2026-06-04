@@ -6,7 +6,7 @@ class UrlHelper {
 
   static String getBaseUrl() {
     if (kIsWeb) {
-      if (kDebugMode) return 'http://localhost:8000';
+      if (kDebugMode) return 'http://127.0.0.1:8000';
       return 'https://shamlashammu.pythonanywhere.com';
     }
     if (defaultTargetPlatform == TargetPlatform.android && kDebugMode) {
@@ -19,24 +19,31 @@ class UrlHelper {
 
   static String resolveMediaUrl(String? path) {
     if (path == null || path.isEmpty) return '';
-    
+
     String baseUrl = getBaseUrl();
     if (baseUrl.endsWith('/')) {
       baseUrl = baseUrl.substring(0, baseUrl.length - 1);
     }
 
-    // Handle absolute URLs that might have wrong hosts (common in local dev)
-    if (path.startsWith('http')) {
-      // If it's a localhost/127.0.0.1 URL but we're on Android emulator, fix it
-      if (defaultTargetPlatform == TargetPlatform.android && kDebugMode) {
-        if (path.contains('127.0.0.1') || path.contains('localhost')) {
-          return path.replaceAll('127.0.0.1', '10.0.2.2').replaceAll('localhost', '10.0.2.2');
-        }
+    // If the API returns an absolute URL (e.g. http://127.0.0.1:8000/media/...),
+    // DRF builds it from the incoming request host which is wrong for:
+    //   - physical mobile devices in debug  (127.0.0.1 = the phone itself)
+    //   - any environment where the host differs from the client
+    // Fix: always strip the host and rebase to the correct server URL.
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      try {
+        final uri = Uri.parse(path);
+        // Keep the path + query but use our correct base URL
+        final relativePart = uri.path +
+            (uri.query.isNotEmpty ? '?${uri.query}' : '');
+        return '$baseUrl$relativePart';
+      } catch (_) {
+        // If parsing fails just return the original URL as a fallback
+        return path;
       }
-      return path;
     }
-    
-    // Ensure relative path starts with /
+
+    // Relative path – just prepend the base URL
     final formattedPath = path.startsWith('/') ? path : '/$path';
     return '$baseUrl$formattedPath';
   }

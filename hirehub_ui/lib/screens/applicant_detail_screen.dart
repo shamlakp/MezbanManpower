@@ -50,10 +50,15 @@ class ApplicantDetailScreen extends StatelessWidget {
                   CircleAvatar(
                     radius: 50,
                     backgroundColor: primary.withOpacity(0.1),
-                    child: Text(
-                      application.applicantName[0].toUpperCase(),
-                      style: const TextStyle(fontSize: 40, fontWeight: FontWeight.w800, color: primary),
-                    ),
+                    backgroundImage: details['profile_image'] != null
+                        ? NetworkImage(UrlHelper.resolveMediaUrl(details['profile_image']))
+                        : null,
+                    child: details['profile_image'] == null
+                        ? Text(
+                            application.applicantName[0].toUpperCase(),
+                            style: const TextStyle(fontSize: 40, fontWeight: FontWeight.w800, color: primary),
+                          )
+                        : null,
                   ),
                   const SizedBox(height: 16),
                   Text(

@@ -78,7 +78,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
                 // ── App name ───────────────────────────────────
                 Text(
-                  'HireHub',
+                  "MezbanManPower",
                   style: TextStyle(
                     fontSize: 34,
                     fontWeight: FontWeight.w900,

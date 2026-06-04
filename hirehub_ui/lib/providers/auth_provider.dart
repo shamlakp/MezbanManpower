@@ -253,6 +253,7 @@ class AuthProvider with ChangeNotifier {
   Future<bool> updateApplicantProfile(
     Map<String, dynamic> data, [
     PlatformFile? resumeFile,
+    PlatformFile? imageFile,
   ]) async {
     _isLoading = true;
     _errorMessage = null;
@@ -261,6 +262,7 @@ class AuthProvider with ChangeNotifier {
       final response = await _apiService.updateApplicantProfile(
         data,
         resumeFile,
+        imageFile,
       );
       if (response.statusCode == 200) {
         // Force refresh of the user state to sync the dashboard

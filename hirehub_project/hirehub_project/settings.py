@@ -190,6 +190,7 @@ OTP_TEST_MODE = env.bool('OTP_TEST_MODE', default=DEBUG) # Enable by default in 
 
 # CORS Settings
 CORS_ALLOW_ALL_ORIGINS = True
+CORS_URLS_REGEX = r'^/api/.*$|^/media/.*$'
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
     "accept",

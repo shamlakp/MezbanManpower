@@ -5,6 +5,7 @@ import '../providers/application_provider.dart';
 import '../models/job_application.dart';
 import 'applicant_detail_screen.dart';
 import '../constants/colors.dart';
+import '../utils/url_helper.dart';
 
 class RecruiterApplicationsScreen extends StatefulWidget {
   const RecruiterApplicationsScreen({super.key});
@@ -179,10 +180,15 @@ class _RecruiterApplicationsScreenState extends State<RecruiterApplicationsScree
                   CircleAvatar(
                     radius: 24,
                     backgroundColor: surfaceColor,
-                    child: Text(
-                      app.applicantName[0].toUpperCase(),
-                      style: const TextStyle(fontWeight: FontWeight.w800, color: BrandColor.c500),
-                    ),
+                    backgroundImage: app.applicantDetails?['profile_image'] != null
+                        ? NetworkImage(UrlHelper.resolveMediaUrl(app.applicantDetails!['profile_image']))
+                        : null,
+                    child: app.applicantDetails?['profile_image'] == null
+                        ? Text(
+                            app.applicantName[0].toUpperCase(),
+                            style: const TextStyle(fontWeight: FontWeight.w800, color: BrandColor.c500),
+                          )
+                        : null,
                   ),
                   const SizedBox(width: 16),
                   Expanded(

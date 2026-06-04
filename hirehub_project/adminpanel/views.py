@@ -317,7 +317,8 @@ class MeAPI(APIView):
             'username': user.username,
             'email': user.email,
             'user_type': user.user_type,
-            'is_active': user.is_active
+            'is_active': user.is_active,
+            'domain': settings.DOMAIN if hasattr(settings, 'DOMAIN') else 'http://127.0.0.1:8000'
         }
         
         # Lazy create profile if missing and include in response

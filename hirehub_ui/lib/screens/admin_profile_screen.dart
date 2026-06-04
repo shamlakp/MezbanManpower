@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../utils/url_helper.dart';
 import 'login_screen.dart';
+import 'modern_chat_screen.dart';
 import '../widgets/custom_button.dart';
 
 class AdminProfileScreen extends StatelessWidget {
@@ -81,18 +82,23 @@ class AdminProfileScreen extends StatelessWidget {
                 const SizedBox(height: 24),
                 _buildAdminAction(
                   context,
-                  icon: Icons.dashboard_outlined,
-                  label: 'Admin Dashboard',
-                  onTap: () => UrlHelper.launchBackendUrl('/adminpanel/dashboard/'),
-                  color: const Color(0xFF673AB7),
+                  icon: Icons.settings_suggest_outlined,
+                  label: 'Django Admin Panel',
+                  subtitle: 'Manage database and users',
+                  onTap: () => UrlHelper.launchBackendUrl('/admin/'),
+                  color: Colors.orange[800]!,
                 ),
                 const SizedBox(height: 16),
                 _buildAdminAction(
                   context,
-                  icon: Icons.settings_suggest_outlined,
-                  label: 'Django Admin Panel',
-                  onTap: () => UrlHelper.launchBackendUrl('/admin/'),
-                  color: Colors.orange[800]!,
+                  icon: Icons.forum_rounded,
+                  label: 'Messenger',
+                  subtitle: 'View applicant conversations',
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ModernChatScreen()),
+                  ),
+                  color: const Color(0xFF4F46E5),
                 ),
                 const SizedBox(height: 32),
                 SizedBox(
@@ -119,6 +125,7 @@ class AdminProfileScreen extends StatelessWidget {
     BuildContext context, {
     required IconData icon,
     required String label,
+    String? subtitle,
     required VoidCallback onTap,
     required Color color,
   }) {
@@ -137,13 +144,29 @@ class AdminProfileScreen extends StatelessWidget {
             Icon(icon, color: color),
             const SizedBox(width: 16),
             Expanded(
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: color,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: color,
+                    ),
+                  ),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: color.withValues(alpha: 0.6),
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
             Icon(Icons.arrow_forward_ios, size: 14, color: color),

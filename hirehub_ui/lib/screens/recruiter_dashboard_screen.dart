@@ -12,7 +12,6 @@ import '../constants/colors.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/statistics_chart.dart';
 import 'candidate_swipe_screen.dart';
-import 'modern_chat_screen.dart';
 
 class RecruiterDashboardScreen extends StatefulWidget {
   const RecruiterDashboardScreen({super.key});
@@ -228,26 +227,14 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
   }
 
   Widget _buildQuickActions(BuildContext context, Color primary) {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildActionTile(
-            'Swipe Talent', 
-            Icons.gesture_rounded, 
-            primary, 
-            () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CandidateSwipeScreen()))
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildActionTile(
-            'Messenger', 
-            Icons.forum_rounded, 
-            IndigoColor.c500, 
-            () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ModernChatScreen(userName: 'Alex Johnson')))
-          ),
-        ),
-      ],
+    return _buildActionTile(
+      'Swipe Talent',
+      Icons.gesture_rounded,
+      primary,
+      () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const CandidateSwipeScreen()),
+      ),
     );
   }
 

@@ -1,9 +1,12 @@
 
+import 'dart:io';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../constants/colors.dart';
+import '../utils/url_helper.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_textformfield.dart';
@@ -22,6 +25,8 @@ class _ApplicantProfileScreenState extends State<ApplicantProfileScreen> {
   final _bio = TextEditingController();
   final _skills = TextEditingController();
   PlatformFile? _resumeFile;
+  PlatformFile? _imageFile;
+  String? _profileImageUrl;
   bool _isSaving = false;
 
   @override
@@ -36,9 +41,12 @@ class _ApplicantProfileScreenState extends State<ApplicantProfileScreen> {
     
     final profile = await auth.fetchApplicantProfile();
     if (profile != null) {
+      _fullName.text = profile['full_name'] ?? '';
       _phone.text = profile['phone'] ?? '';
       _bio.text = profile['bio'] ?? '';
       _skills.text = profile['skills'] ?? '';
+      _profileImageUrl = profile['profile_image'];
+      debugPrint('Profile Loaded: Image URL = $_profileImageUrl');
       if (mounted) setState(() {});
     }
   }
@@ -50,6 +58,15 @@ class _ApplicantProfileScreenState extends State<ApplicantProfileScreen> {
     );
     if (result != null && result.files.isNotEmpty) {
       setState(() => _resumeFile = result.files.first);
+    }
+  }
+
+  Future<void> _pickImage() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+    );
+    if (result != null && result.files.isNotEmpty) {
+      setState(() => _imageFile = result.files.first);
     }
   }
 
@@ -65,12 +82,17 @@ class _ApplicantProfileScreenState extends State<ApplicantProfileScreen> {
       'skills': _skills.text,
     };
     
-    final success = await context.read<AuthProvider>().updateApplicantProfile(data, _resumeFile);
+    final success = await context.read<AuthProvider>().updateApplicantProfile(data, _resumeFile, _imageFile);
     
     if (mounted) {
       setState(() => _isSaving = false);
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile updated successfully!'), backgroundColor: SuccessColor.c500));
+        setState(() {
+          _imageFile = null;
+          _resumeFile = null;
+        });
+        await _loadProfile(); // Refresh image and data
       } else {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.read<AuthProvider>().errorMessage ?? 'Failed to update profile')));
       }
@@ -101,30 +123,52 @@ class _ApplicantProfileScreenState extends State<ApplicantProfileScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Center(
-                child: Stack(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: primary, width: 2)),
-                      child: CircleAvatar(
-                        radius: 50,
-                        backgroundColor: NeutralColor.c100,
-                        child: Text(
-                          _fullName.text.isNotEmpty ? _fullName.text[0].toUpperCase() : '?',
-                          style: TextStyle(fontSize: 40, fontWeight: FontWeight.w900, color: primary),
+                child: GestureDetector(
+                  onTap: _pickImage,
+                  child: Stack(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: primary, width: 2)),
+                        child: CircleAvatar(
+                          radius: 50,
+                          backgroundColor: NeutralColor.c100,
+                          backgroundImage: _imageFile == null && _profileImageUrl != null
+                              ? NetworkImage(UrlHelper.resolveMediaUrl(_profileImageUrl))
+                              : null,
+                          child: _imageFile != null
+                              ? ClipOval(
+                                  child: kIsWeb
+                                      ? Image.memory(
+                                          _imageFile!.bytes!,
+                                          width: 100, height: 100,
+                                          fit: BoxFit.cover,
+                                        )
+                                      : Image.file(
+                                          File(_imageFile!.path!),
+                                          width: 100, height: 100,
+                                          fit: BoxFit.cover,
+                                        ),
+                                )
+                              : (_profileImageUrl == null
+                                  ? Text(
+                                      _fullName.text.isNotEmpty ? _fullName.text[0].toUpperCase() : '?',
+                                      style: TextStyle(fontSize: 40, fontWeight: FontWeight.w900, color: primary),
+                                    )
+                                  : null),
                         ),
                       ),
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(color: primary, shape: BoxShape.circle),
-                        child: const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 18),
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(color: primary, shape: BoxShape.circle),
+                          child: const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 18),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 40),

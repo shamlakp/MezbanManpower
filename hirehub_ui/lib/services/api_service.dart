@@ -292,6 +292,7 @@ class ApiService {
   Future<Response> updateApplicantProfile(
     Map<String, dynamic> data, [
     PlatformFile? resumeFile,
+    PlatformFile? imageFile,
   ]) async {
     try {
       final formData = FormData();
@@ -319,6 +320,33 @@ class ApiService {
                 await MultipartFile.fromFile(
                   resumeFile.path!,
                   filename: resumeFile.name,
+                ),
+              ),
+            );
+          }
+        }
+      }
+      if (imageFile != null) {
+        if (kIsWeb) {
+          if (imageFile.bytes != null) {
+            formData.files.add(
+              MapEntry(
+                'profile_image',
+                MultipartFile.fromBytes(
+                  imageFile.bytes!,
+                  filename: imageFile.name,
+                ),
+              ),
+            );
+          }
+        } else {
+          if (imageFile.path != null) {
+            formData.files.add(
+              MapEntry(
+                'profile_image',
+                await MultipartFile.fromFile(
+                  imageFile.path!,
+                  filename: imageFile.name,
                 ),
               ),
             );

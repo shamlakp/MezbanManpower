@@ -74,54 +74,56 @@ class _LoginScreenState extends State<LoginScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40, height: 4,
-              decoration: BoxDecoration(
-                color: NeutralColor.c300,
-                borderRadius: BorderRadius.circular(2),
+      builder: (context) => SingleChildScrollView(
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(32, 20, 32, 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40, height: 4,
+                decoration: BoxDecoration(
+                  color: NeutralColor.c300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'Join HireHub',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w900,
-                color: NeutralColor.c900,
+              const SizedBox(height: 24),
+              Text(
+                'Join HireHub',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900,
+                  color: NeutralColor.c900,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Choose how you want to use the platform',
-              style: TextStyle(color: NeutralColor.c600),
-            ),
-            const SizedBox(height: 32),
-            _buildRoleOption(
-              icon: Icons.person_search_rounded,
-              title: 'I am a Jobseeker',
-              subtitle: 'Find roles and manage applications',
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const ApplicantRegisterScreen()));
-              },
-            ),
-            const SizedBox(height: 16),
-            _buildRoleOption(
-              icon: Icons.business_rounded,
-              title: 'I am a Recruiter',
-              subtitle: 'Post jobs and hire top talent',
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen()));
-              },
-            ),
-            const SizedBox(height: 20),
-          ],
+              const SizedBox(height: 8),
+              Text(
+                'Choose how you want to use the platform',
+                style: TextStyle(color: NeutralColor.c600),
+              ),
+              const SizedBox(height: 32),
+              _buildRoleOption(
+                icon: Icons.person_search_rounded,
+                title: 'I am a Jobseeker',
+                subtitle: 'Find roles and manage applications',
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const ApplicantRegisterScreen()));
+                },
+              ),
+              const SizedBox(height: 16),
+              _buildRoleOption(
+                icon: Icons.business_rounded,
+                title: 'I am a Recruiter',
+                subtitle: 'Post jobs and hire top talent',
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen()));
+                },
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     );

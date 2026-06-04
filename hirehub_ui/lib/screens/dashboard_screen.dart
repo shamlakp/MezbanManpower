@@ -138,6 +138,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final auth = context.watch<AuthProvider>();
     final username = auth.userData?['username'] ?? 'User';
     debugPrint('DashboardScreen: userData: ${auth.userData}');
+    debugPrint('DashboardScreen: Profile Image = ${auth.userData?['profile']?['profile_image']}');
     final rawUserType = (auth.userData?['user_type'] ?? auth.userData?['role'] ?? 'applicant').toString().toLowerCase();
     
     // Normalize userType
@@ -231,10 +232,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ],
                   child: CircleAvatar(
                     backgroundColor: BrandColor.c50,
-                    child: Text(
-                      username[0].toUpperCase(),
-                      style: const TextStyle(color: BrandColor.c500, fontWeight: FontWeight.bold),
-                    ),
+                    backgroundImage: auth.userData?['profile']?['profile_image'] != null
+                        ? NetworkImage(UrlHelper.resolveMediaUrl(auth.userData!['profile']['profile_image']))
+                        : null,
+                    child: auth.userData?['profile']?['profile_image'] == null
+                        ? Text(
+                            username[0].toUpperCase(),
+                            style: const TextStyle(color: BrandColor.c500, fontWeight: FontWeight.bold),
+                          )
+                        : null,
                   ),
                 )
               : GestureDetector(
@@ -391,6 +397,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildDrawer(BuildContext context, String username, String userType) {
+    final auth = context.read<AuthProvider>();
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primary = BrandColor.c500;
     
@@ -414,10 +421,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 CircleAvatar(
                   radius: 35,
                   backgroundColor: Colors.white,
-                  child: Text(
-                    username[0].toUpperCase(),
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: primary),
-                  ),
+                  backgroundImage: auth.userData?['profile']?['profile_image'] != null
+                      ? NetworkImage(UrlHelper.resolveMediaUrl(auth.userData!['profile']['profile_image']))
+                      : null,
+                  child: auth.userData?['profile']?['profile_image'] == null
+                      ? Text(
+                          username[0].toUpperCase(),
+                          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: primary),
+                        )
+                      : null,
                 ),
                 const SizedBox(height: 16),
                 Text(
