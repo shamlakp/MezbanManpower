@@ -170,16 +170,13 @@ class JobGridCard extends StatelessWidget {
   }
 
   Widget _buildViewButton(VoidCallback? onTap) {
-    return CustomButton(
-      onPressed: onTap,
-      text: 'View',
-      buttonBgColor: const Color(0xFF0EA5E9),
-      fontColor: Colors.white,
-      elevation: 0,
-      height: 30,
-      width: 60,
-      textStyle: const TextStyle(fontSize: 11),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+    return Text(
+      'View',
+      style: TextStyle(
+        color: Colors.grey[600],
+        fontSize: 12,
+        fontWeight: FontWeight.bold,
+      ),
     );
   }
 

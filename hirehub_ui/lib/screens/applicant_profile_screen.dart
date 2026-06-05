@@ -92,6 +92,7 @@ class _ApplicantProfileScreenState extends State<ApplicantProfileScreen> {
           _imageFile = null;
           _resumeFile = null;
         });
+        PaintingBinding.instance.imageCache.clear();
         await _loadProfile(); // Refresh image and data
       } else {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.read<AuthProvider>().errorMessage ?? 'Failed to update profile')));

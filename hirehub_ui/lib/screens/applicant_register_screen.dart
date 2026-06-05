@@ -127,7 +127,7 @@ class _ApplicantRegisterScreenState extends State<ApplicantRegisterScreen> {
               ),
               const SizedBox(height: 6),
               Center(
-                child: Text('Find your dream job with HireHub',
+                child: Text('Find your dream job with Mezban ManPower',
                     style: TextStyle(fontSize: 14, color: NeutralColor.c600)),
               ),
               const SizedBox(height: 28),

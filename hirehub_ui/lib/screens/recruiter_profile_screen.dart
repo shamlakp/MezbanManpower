@@ -83,6 +83,11 @@ class _RecruiterProfileScreenState extends State<RecruiterProfileScreen> {
       setState(() => _isSaving = false);
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile updated successfully!'), backgroundColor: Color(0xFF10B981)));
+        setState(() {
+          _pickedLogo = null;
+        });
+        PaintingBinding.instance.imageCache.clear();
+        await _loadProfile();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.read<AuthProvider>().errorMessage ?? 'Failed to update')));
       }

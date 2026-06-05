@@ -29,6 +29,8 @@ import '../utils/location_helper.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:icons_plus/icons_plus.dart';
 
+const String baseUrl = "https://shamlashammu.pythonanywhere.com";
+
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
@@ -619,9 +621,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               ),
                             ],
                             image: DecorationImage(
-                              image: NetworkImage(imagePaths[index]),
-                              fit: BoxFit.cover,
-                            ),
+  image: NetworkImage(
+    imagePaths[index].startsWith("http")
+        ? imagePaths[index]
+        : "$baseUrl${imagePaths[index]}",
+  ),
+  fit: BoxFit.cover,
+),
                           ),
                         ),
                         const SizedBox(height: 10),
