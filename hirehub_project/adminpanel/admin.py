@@ -19,7 +19,7 @@ class PlatformSettingsAdmin(admin.ModelAdmin):
         if self.model.objects.count() >= 1:
             return False
         return super().has_add_permission(request)
-
+1
 @admin.register(CustomUser)
 class CustomUserAdmin(admin.ModelAdmin):
     list_display = ('username', 'email', 'user_type', 'is_active', 'delete_user_link')

@@ -139,9 +139,23 @@ class ApplicantProfileAPI(APIView):
             
             serializer = ApplicantProfileSerializer(profile, data=request.data, partial=True, context={'request': request})
             if serializer.is_valid():
+                # Manually sync user fields if provided
+                if 'full_name' in request.data:
+                    full_name = request.data['full_name'].strip()
+                    name_parts = full_name.split(' ', 1)
+                    request.user.first_name = name_parts[0]
+                    request.user.last_name = name_parts[1] if len(name_parts) > 1 else ''
+                    request.user.save()
+
+                # Sync file uploads manually for robustness with multipart/form-data
+                if 'profile_image' in request.FILES:
+                    profile.profile_image = request.FILES['profile_image']
+                if 'resume' in request.FILES:
+                    profile.resume = request.FILES['resume']
+
                 serializer.save()
                 logger.info(f"ApplicantProfile successfully updated for {request.user}")
-                return Response(serializer.data, status=status.HTTP_200_OK)
+                return Response(ApplicantProfileSerializer(profile, context={'request': request}).data, status=status.HTTP_200_OK)
             else:
                 logger.warning(f"ApplicantProfile validation failed for {request.user}: {serializer.errors}")
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

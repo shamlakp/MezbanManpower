@@ -185,6 +185,62 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  /// Forgot Password - Send OTP
+  Future<bool> forgotPasswordSendOTP(String email) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final response = await _apiService.forgotPasswordSendOTP(email);
+      if (response.statusCode == 200) {
+        final data = response.data;
+        if (data is Map && data.containsKey('otp')) {
+          _lastOtp = data['otp'].toString();
+        } else {
+          _lastOtp = null;
+        }
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      }
+      _isLoading = false;
+      _errorMessage = 'Failed to send OTP';
+      notifyListeners();
+      return false;
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = _handleError(e);
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Reset Password
+  Future<bool> resetPassword(String email, String otp, String newPassword) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final response = await _apiService.resetPassword(email, otp, newPassword);
+      if (response.statusCode == 200) {
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      }
+      _isLoading = false;
+      _errorMessage = 'Failed to reset password';
+      notifyListeners();
+      return false;
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = _handleError(e);
+      notifyListeners();
+      return false;
+    }
+  }
+
   /// Register recruiter via API
   Future<bool> registerRecruiter(Map<String, dynamic> data) async {
     _isLoading = true;
@@ -315,6 +371,8 @@ class AuthProvider with ChangeNotifier {
         logoFile,
       );
       if (response.statusCode == 200 || response.statusCode == 201) {
+        // Force refresh of the user state to sync the dashboard
+        await initializeAuth();
         _isLoading = false;
         notifyListeners();
         return true;

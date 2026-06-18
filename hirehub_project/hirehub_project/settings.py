@@ -49,6 +49,7 @@ if not DEBUG:
     CSRF_COOKIE_SECURE = True
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
+  
 
 # Application definition
 
@@ -66,9 +67,8 @@ INSTALLED_APPS = [
     'corsheaders',
 ]
 
-MIDDLEWARE = [
+MIDDLEWARE = ['corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',  # Add WhiteNoise here
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -190,7 +190,7 @@ OTP_TEST_MODE = env.bool('OTP_TEST_MODE', default=DEBUG) # Enable by default in 
 
 # CORS Settings
 CORS_ALLOW_ALL_ORIGINS = True
-CORS_URLS_REGEX = r'^/api/.*$|^/media/.*$'
+CORS_URLS_REGEX = r'^.*$'
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
     "accept",
@@ -211,5 +211,4 @@ REST_FRAMEWORK = {
     ],
 }
 
-# trigger reload
-
+# trigger reload again

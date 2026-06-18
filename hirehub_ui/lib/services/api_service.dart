@@ -20,6 +20,8 @@ class ApiService {
     '/adminpanel/api/register/',
     '/adminpanel/api/send-otp/',
     '/adminpanel/api/verify-otp/',
+    '/adminpanel/api/forgot-password/send-otp/',
+    '/adminpanel/api/forgot-password/reset/',
     '/api/applicant/register/',
   ];
 
@@ -243,6 +245,32 @@ class ApiService {
       return response;
     } catch (e) {
       _logError('verifyOTP', e);
+      rethrow;
+    }
+  }
+
+  Future<Response> forgotPasswordSendOTP(String email) async {
+    try {
+      final response = await _dio.post(
+        '/adminpanel/api/forgot-password/send-otp/',
+        data: {'email': email},
+      );
+      return response;
+    } catch (e) {
+      _logError('forgotPasswordSendOTP', e);
+      rethrow;
+    }
+  }
+
+  Future<Response> resetPassword(String email, String otp, String newPassword) async {
+    try {
+      final response = await _dio.post(
+        '/adminpanel/api/forgot-password/reset/',
+        data: {'email': email, 'otp': otp, 'new_password': newPassword},
+      );
+      return response;
+    } catch (e) {
+      _logError('resetPassword', e);
       rethrow;
     }
   }
@@ -498,13 +526,13 @@ class ApiService {
 
   static String getBaseUrl() {
     if (kIsWeb) {
-      if (kDebugMode) return 'http://127.0.0.1:8000';
+      if (kDebugMode) return 'http://localhost:8000';
       return 'https://shamlashammu.pythonanywhere.com';
     }
     if (defaultTargetPlatform == TargetPlatform.android && kDebugMode) {
       return 'http://10.0.2.2:8000';
     }
-    if (kDebugMode) return 'http://127.0.0.1:8000';
+    if (kDebugMode) return 'http://localhost:8000';
     return 'https://shamlashammu.pythonanywhere.com';
   }
 

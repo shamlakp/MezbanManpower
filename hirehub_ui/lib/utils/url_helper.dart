@@ -6,13 +6,13 @@ class UrlHelper {
 
   static String getBaseUrl() {
     if (kIsWeb) {
-      if (kDebugMode) return 'http://127.0.0.1:8000';
+      if (kDebugMode) return 'http://localhost:8000';
       return 'https://shamlashammu.pythonanywhere.com';
     }
     if (defaultTargetPlatform == TargetPlatform.android && kDebugMode) {
       return 'http://10.0.2.2:8000';
     }
-    if (kDebugMode) return 'http://127.0.0.1:8000';
+    if (kDebugMode) return 'http://localhost:8000';
     return 'https://shamlashammu.pythonanywhere.com';
   }
 

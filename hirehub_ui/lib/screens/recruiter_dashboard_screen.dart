@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/job_provider.dart';
+import '../providers/application_provider.dart';
 import '../utils/url_helper.dart';
 import 'company_profile_screen.dart';
 import 'create_job_screen.dart';
@@ -35,9 +36,11 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
   Future<void> _loadData() async {
     final auth = context.read<AuthProvider>();
     final jobProvider = context.read<JobProvider>();
+    final applicationProvider = context.read<ApplicationProvider>();
     
     final companies = await auth.fetchRecruiterProfile();
     await jobProvider.fetchJobs();
+    await applicationProvider.fetchApplications();
     
     if (mounted) {
       final companyIds = (companies ?? []).map((c) => c['id'] as int).toList();
@@ -46,7 +49,7 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
       setState(() {
         _companies = companies ?? [];
         _totalJobs = recruiterJobs.length;
-        _totalApplications = _companies.length * 5;
+        _totalApplications = applicationProvider.applications.length;
         _isLoading = false;
       });
     }

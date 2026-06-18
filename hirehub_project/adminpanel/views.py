@@ -337,3 +337,82 @@ class MeAPI(APIView):
             data['profile'] = CompanyProfileSerializer(profile, context={'request': request}).data
         
         return Response(data, status=status.HTTP_200_OK)
+
+class ForgotPasswordSendOTPAPI(APIView):
+    permission_classes = [AllowAny]
+    def post(self, request):
+        email = request.data.get('email')
+        if not email:
+            return Response({'error': 'Email is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Check if email is registered
+        if not CustomUser.objects.filter(email=email).exists():
+            return Response({'error': 'No account found with this email.'}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            otp_obj, created = OTPVerification.objects.get_or_create(email=email)
+            otp_obj.generate_otp()
+            
+            # Handle Test Mode without SMTP
+            if getattr(settings, 'OTP_TEST_MODE', False):
+                logger.info(f"OTP_TEST_MODE (Forgot Password): Skipping email to {email}, code is {otp_obj.otp}")
+                return Response({
+                    'message': 'OTP generated (Test Mode)',
+                    'otp': otp_obj.otp, # Return OTP only in test mode
+                    'is_test': True
+                }, status=status.HTTP_200_OK)
+
+            # Bypass SMTP for free hosting tier and return the OTP directly
+            logger.info(f"Free Tier Mode (Forgot Password): Skipping email to {email}, code is {otp_obj.otp}")
+            return Response({
+                'message': 'OTP generated successfully. Auto-filling for testing/free tier.',
+                'otp': otp_obj.otp,
+                'is_test': True
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            logger.error(f"Database error in ForgotPasswordSendOTPAPI for {email}: {str(e)}")
+            return Response({
+                'error': 'Server error. Please ensure database migrations are updated.',
+                'detail': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class ResetPasswordAPI(APIView):
+    permission_classes = [AllowAny]
+    def post(self, request):
+        try:
+            email = request.data.get('email')
+            otp = request.data.get('otp')
+            new_password = request.data.get('new_password')
+            
+            if not all([email, otp, new_password]):
+                return Response({'error': 'Email, OTP, and new password are required.'}, status=status.HTTP_400_BAD_REQUEST)
+                
+            otp_obj = OTPVerification.objects.filter(email=email).first()
+            if not otp_obj:
+                return Response({'error': 'No OTP found for this email.'}, status=status.HTTP_400_BAD_REQUEST)
+                
+            if not otp_obj.is_valid():
+                return Response({'error': 'OTP has expired.'}, status=status.HTTP_400_BAD_REQUEST)
+                
+            if otp_obj.otp != otp:
+                return Response({'error': 'Invalid OTP.'}, status=status.HTTP_400_BAD_REQUEST)
+                
+            user = CustomUser.objects.filter(email=email).first()
+            if not user:
+                return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+            # Reset password
+            user.set_password(new_password)
+            user.save()
+
+            # Clean up OTP
+            otp_obj.delete()
+
+            return Response({'message': 'Password reset successfully.'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            logger.error(f"Error in ResetPasswordAPI: {str(e)}")
+            return Response({
+                'error': 'Password reset failed due to a server error.',
+                'detail': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

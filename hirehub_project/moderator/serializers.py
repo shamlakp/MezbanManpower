@@ -4,11 +4,15 @@ from .models import CompanyProfile, JobPost
 class CompanyProfileSerializer(serializers.ModelSerializer):
     # Always return a relative path so the Flutter client can rebase correctly.
     logo = serializers.SerializerMethodField()
+    profile_image = serializers.SerializerMethodField()
 
     def get_logo(self, obj):
         if obj.logo and hasattr(obj.logo, 'name') and obj.logo.name:
             return f'/media/{obj.logo.name}'
         return None
+
+    def get_profile_image(self, obj):
+        return self.get_logo(obj)
 
     class Meta:
         model = CompanyProfile
