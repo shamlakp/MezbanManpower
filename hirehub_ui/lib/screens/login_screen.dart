@@ -237,9 +237,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     _buildTextField(
                       controller: _usernameController,
-                      hint: 'Username',
-                      icon: Icons.alternate_email_rounded,
-                      validator: (v) => v!.isEmpty ? 'Please enter username' : null,
+                      hint: 'Mobile Number or Username',
+                      icon: Icons.phone_android_rounded,
+                      validator: (v) => v!.isEmpty ? 'Please enter mobile number or username' : null,
                     ),
                     const SizedBox(height: 20),
                     _buildTextField(

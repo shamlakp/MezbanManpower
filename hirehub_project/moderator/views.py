@@ -86,18 +86,18 @@ class JobPostViewSet(viewsets.ModelViewSet):
 
 class ApplicantRegisterAPI(APIView):
     def post(self, request):
-        email = request.data.get('email')
-        if email:
-            otp_obj = OTPVerification.objects.filter(email=email).first()
+        mobile_number = request.data.get('mobile_number')
+        if mobile_number:
+            otp_obj = OTPVerification.objects.filter(mobile_number=mobile_number).first()
             if not otp_obj or not otp_obj.is_verified:
-                return Response({"error": "Please verify your email with an OTP first."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": "Please verify your mobile number with an OTP first."}, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = ApplicantSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
             user.is_active = True
             user.save()
-            if email and otp_obj:
+            if mobile_number and otp_obj:
                 otp_obj.delete()
             return Response({"message": "Registration successful. You can log in immediately."}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -12,38 +12,37 @@ class AdminPanelAPITest(TestCase):
     def test_register_api_creates_inactive_user(self):
         url = reverse('adminpanel:api_register')
         data = {
-            'username': 'newuser',
-            'email': 'new@example.com',
+            'mobile_number': '1234567890',
             'password': 'password123',
             'user_type': 'applicant'
         }
         # Create verified OTP record
-        OTPVerification.objects.create(email='new@example.com', otp='123456', is_verified=True)
+        OTPVerification.objects.create(mobile_number='1234567890', otp='123456', is_verified=True)
         
         response = self.api_client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIn('Registration successful', response.data['message'])
         
-        user = CustomUser.objects.get(username='newuser')
+        user = CustomUser.objects.get(username='1234567890')
         self.assertTrue(user.is_active)
 
     def test_login_api_fails_for_unverified_user(self):
         # Create inactive user
         user = CustomUser.objects.create_user(
-            username='unverified',
-            email='unverified@example.com',
+            username='unverified_mob',
+            mobile_number='unverified_mob',
             password='password123',
             is_active=False
         )
         
         url = reverse('adminpanel:api_login')
         data = {
-            'username': 'unverified',
+            'username': 'unverified_mob',
             'password': 'password123'
         }
         response = self.api_client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.assertEqual(response.data['error'], 'Please verify your email before logging in.')
+        self.assertEqual(response.data['error'], 'Please verify your mobile number before logging in.')
 
     def test_login_api_succeeds_for_verified_user(self):
         # Create active user

@@ -223,11 +223,11 @@ class ApiService {
     }
   }
 
-  Future<Response> sendOTP(String email) async {
+  Future<Response> sendOTP(String mobileNumber) async {
     try {
       final response = await _dio.post(
         '/adminpanel/api/send-otp/',
-        data: {'email': email},
+        data: {'mobile_number': mobileNumber},
       );
       return response;
     } catch (e) {
@@ -236,11 +236,11 @@ class ApiService {
     }
   }
 
-  Future<Response> verifyOTP(String email, String otp) async {
+  Future<Response> verifyOTP(String mobileNumber, String otp) async {
     try {
       final response = await _dio.post(
         '/adminpanel/api/verify-otp/',
-        data: {'email': email, 'otp': otp},
+        data: {'mobile_number': mobileNumber, 'otp': otp},
       );
       return response;
     } catch (e) {
@@ -249,11 +249,11 @@ class ApiService {
     }
   }
 
-  Future<Response> forgotPasswordSendOTP(String email) async {
+  Future<Response> forgotPasswordSendOTP(String mobileNumber) async {
     try {
       final response = await _dio.post(
         '/adminpanel/api/forgot-password/send-otp/',
-        data: {'email': email},
+        data: {'mobile_number': mobileNumber},
       );
       return response;
     } catch (e) {
@@ -262,11 +262,11 @@ class ApiService {
     }
   }
 
-  Future<Response> resetPassword(String email, String otp, String newPassword) async {
+  Future<Response> resetPassword(String mobileNumber, String otp, String newPassword) async {
     try {
       final response = await _dio.post(
         '/adminpanel/api/forgot-password/reset/',
-        data: {'email': email, 'otp': otp, 'new_password': newPassword},
+        data: {'mobile_number': mobileNumber, 'otp': otp, 'new_password': newPassword},
       );
       return response;
     } catch (e) {

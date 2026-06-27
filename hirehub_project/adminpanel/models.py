@@ -11,7 +11,8 @@ class CustomUser(AbstractUser):
         ('applicant', 'Applicant'),
     )
     user_type = models.CharField(max_length=10, default='recruiter')
-    email = models.EmailField(unique=True)
+    email = models.EmailField(unique=True, null=True, blank=True)
+    mobile_number = models.CharField(max_length=20, unique=True, null=True, blank=True)
 
     @property
     def full_name(self):
@@ -19,6 +20,13 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return f"{self.username} ({self.user_type})"
+
+    def save(self, *args, **kwargs):
+        if not self.email:
+            self.email = None
+        if not self.mobile_number:
+            self.mobile_number = None
+        super().save(*args, **kwargs)
 
 
 class PlatformSettings(models.Model):
@@ -36,7 +44,7 @@ class PlatformSettings(models.Model):
         return "Platform Global Settings"
 
 class OTPVerification(models.Model):
-    email = models.EmailField(unique=True)
+    mobile_number = models.CharField(max_length=20, unique=True)
     otp = models.CharField(max_length=6)
     created_at = models.DateTimeField(auto_now_add=True)
     is_verified = models.BooleanField(default=False)

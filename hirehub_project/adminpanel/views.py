@@ -190,48 +190,50 @@ def ajax_delete_job(request, job_id):
 
 class LoginAPI(APIView):
     def post(self, request):
-        username = request.data.get('username')
+        mobile_number = request.data.get('mobile_number') or request.data.get('username')
         password = request.data.get('password')
-        user = authenticate(username=username, password=password)
-        if user:
+        
+        # Allow login with either mobile number or username
+        user_check = CustomUser.objects.filter(mobile_number=mobile_number).first() or CustomUser.objects.filter(username=mobile_number).first()
+        
+        if user_check and user_check.check_password(password):
+            user = user_check
+            if not user.is_active:
+                return Response({'error': 'Please verify your mobile number before logging in.'}, status=status.HTTP_401_UNAUTHORIZED)
+                
             token, created = Token.objects.get_or_create(user=user)
             from moderator.utils import notify_admin_on_login
             notify_admin_on_login(user)
             return Response({'status': 'success', 'user_type': user.user_type, 'username': user.username, 'token': token.key})
-        
-        # Check if user exists but is inactive
-        user_check = CustomUser.objects.filter(username=username).first()
-        if user_check and not user_check.is_active:
-            return Response({'error': 'Please verify your email before logging in.'}, status=status.HTTP_401_UNAUTHORIZED)
             
         return Response({'error': 'Invalid Credentials'}, status=status.HTTP_400_BAD_REQUEST)
 
 class SendOTPAPI(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
-        email = request.data.get('email')
-        if not email:
-            return Response({'error': 'Email is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        mobile_number = request.data.get('mobile_number')
+        if not mobile_number:
+            return Response({'error': 'Mobile number is required.'}, status=status.HTTP_400_BAD_REQUEST)
         
-        # Check if email is already registered
-        if CustomUser.objects.filter(email=email).exists():
-            return Response({'error': 'Email is already registered.'}, status=status.HTTP_400_BAD_REQUEST)
+        # Check if mobile_number is already registered
+        if CustomUser.objects.filter(mobile_number=mobile_number).exists() or CustomUser.objects.filter(username=mobile_number).exists():
+            return Response({'error': 'Mobile number is already registered.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            otp_obj, created = OTPVerification.objects.get_or_create(email=email)
+            otp_obj, created = OTPVerification.objects.get_or_create(mobile_number=mobile_number)
             otp_obj.generate_otp()
             
-            # Handle Test Mode without SMTP
+            # Handle Test Mode without SMS
             if getattr(settings, 'OTP_TEST_MODE', False):
-                logger.info(f"OTP_TEST_MODE: Skipping email to {email}, code is {otp_obj.otp}")
+                logger.info(f"OTP_TEST_MODE: Skipping SMS to {mobile_number}, code is {otp_obj.otp}")
                 return Response({
                     'message': 'OTP generated (Test Mode)',
                     'otp': otp_obj.otp, # Return OTP only in test mode
                     'is_test': True
                 }, status=status.HTTP_200_OK)
 
-            # Bypass SMTP for free hosting tier and return the OTP directly
-            logger.info(f"Free Tier Mode: Skipping email to {email}, code is {otp_obj.otp}")
+            # Bypass SMS for free hosting tier and return the OTP directly
+            logger.info(f"Free Tier Mode: Skipping SMS to {mobile_number}, code is {otp_obj.otp}")
             return Response({
                 'message': 'OTP generated successfully. Auto-filling for testing/free tier.',
                 'otp': otp_obj.otp,
@@ -239,7 +241,7 @@ class SendOTPAPI(APIView):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
-            logger.error(f"Database error in SendOTPAPI for {email}: {str(e)}")
+            logger.error(f"Database error in SendOTPAPI for {mobile_number}: {str(e)}")
             return Response({
                 'error': 'Server error. Please ensure database migrations are updated.',
                 'detail': str(e)
@@ -249,16 +251,22 @@ class VerifyOTPAPI(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
         try:
-            email = request.data.get('email')
+            mobile_number = request.data.get('mobile_number')
             otp = request.data.get('otp')
             
-            if not email or not otp:
-                return Response({'error': 'Email and OTP are required.'}, status=status.HTTP_400_BAD_REQUEST)
+            if not mobile_number or not otp:
+                return Response({'error': 'Mobile number and OTP are required.'}, status=status.HTTP_400_BAD_REQUEST)
                 
-            otp_obj = OTPVerification.objects.filter(email=email).first()
+            otp_obj = OTPVerification.objects.filter(mobile_number=mobile_number).first()
             if not otp_obj:
-                return Response({'error': 'No OTP found for this email.'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'No OTP found for this mobile number.'}, status=status.HTTP_400_BAD_REQUEST)
                 
+            # Handle Test Mode ANY OTP
+            if getattr(settings, 'OTP_TEST_MODE', False):
+                otp_obj.is_verified = True
+                otp_obj.save()
+                return Response({'message': 'Mobile number verified successfully (Test Mode).'}, status=status.HTTP_200_OK)
+
             if not otp_obj.is_valid():
                 return Response({'error': 'OTP has expired.'}, status=status.HTTP_400_BAD_REQUEST)
                 
@@ -267,7 +275,7 @@ class VerifyOTPAPI(APIView):
                 
             otp_obj.is_verified = True
             otp_obj.save()
-            return Response({'message': 'Email verified successfully.'}, status=status.HTTP_200_OK)
+            return Response({'message': 'Mobile number verified successfully.'}, status=status.HTTP_200_OK)
         except Exception as e:
             logger.error(f"Error in VerifyOTPAPI: {str(e)}")
             return Response({
@@ -278,11 +286,11 @@ class VerifyOTPAPI(APIView):
 class RegisterAPI(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
-        email = request.data.get('email')
-        if email:
-            otp_obj = OTPVerification.objects.filter(email=email).first()
+        mobile_number = request.data.get('mobile_number')
+        if mobile_number:
+            otp_obj = OTPVerification.objects.filter(mobile_number=mobile_number).first()
             if not otp_obj or not otp_obj.is_verified:
-                return Response({"error": "Please verify your email with an OTP first."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": "Please verify your mobile number with an OTP first."}, status=status.HTTP_400_BAD_REQUEST)
 
         # We use a dedicated recruiter serializer to ensure password hashing and correct user_type
         from .serializers import RecruiterRegisterSerializer
@@ -292,7 +300,7 @@ class RegisterAPI(APIView):
             user.is_active = True # Auto-activate for testing
             user.save()
             # Clean up the OTP entry
-            if email and otp_obj:
+            if mobile_number and otp_obj:
                 otp_obj.delete()
             return Response({"message": "Registration successful. You can log in immediately."}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -341,29 +349,29 @@ class MeAPI(APIView):
 class ForgotPasswordSendOTPAPI(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
-        email = request.data.get('email')
-        if not email:
-            return Response({'error': 'Email is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        mobile_number = request.data.get('mobile_number')
+        if not mobile_number:
+            return Response({'error': 'Mobile number is required.'}, status=status.HTTP_400_BAD_REQUEST)
         
-        # Check if email is registered
-        if not CustomUser.objects.filter(email=email).exists():
-            return Response({'error': 'No account found with this email.'}, status=status.HTTP_404_NOT_FOUND)
+        # Check if mobile_number is registered
+        if not CustomUser.objects.filter(mobile_number=mobile_number).exists() and not CustomUser.objects.filter(username=mobile_number).exists():
+            return Response({'error': 'No account found with this mobile number.'}, status=status.HTTP_404_NOT_FOUND)
 
         try:
-            otp_obj, created = OTPVerification.objects.get_or_create(email=email)
+            otp_obj, created = OTPVerification.objects.get_or_create(mobile_number=mobile_number)
             otp_obj.generate_otp()
             
-            # Handle Test Mode without SMTP
+            # Handle Test Mode without SMS
             if getattr(settings, 'OTP_TEST_MODE', False):
-                logger.info(f"OTP_TEST_MODE (Forgot Password): Skipping email to {email}, code is {otp_obj.otp}")
+                logger.info(f"OTP_TEST_MODE (Forgot Password): Skipping SMS to {mobile_number}, code is {otp_obj.otp}")
                 return Response({
                     'message': 'OTP generated (Test Mode)',
                     'otp': otp_obj.otp, # Return OTP only in test mode
                     'is_test': True
                 }, status=status.HTTP_200_OK)
 
-            # Bypass SMTP for free hosting tier and return the OTP directly
-            logger.info(f"Free Tier Mode (Forgot Password): Skipping email to {email}, code is {otp_obj.otp}")
+            # Bypass SMS for free hosting tier and return the OTP directly
+            logger.info(f"Free Tier Mode (Forgot Password): Skipping SMS to {mobile_number}, code is {otp_obj.otp}")
             return Response({
                 'message': 'OTP generated successfully. Auto-filling for testing/free tier.',
                 'otp': otp_obj.otp,
@@ -371,7 +379,7 @@ class ForgotPasswordSendOTPAPI(APIView):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
-            logger.error(f"Database error in ForgotPasswordSendOTPAPI for {email}: {str(e)}")
+            logger.error(f"Database error in ForgotPasswordSendOTPAPI for {mobile_number}: {str(e)}")
             return Response({
                 'error': 'Server error. Please ensure database migrations are updated.',
                 'detail': str(e)
@@ -381,24 +389,22 @@ class ResetPasswordAPI(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
         try:
-            email = request.data.get('email')
+            mobile_number = request.data.get('mobile_number')
             otp = request.data.get('otp')
             new_password = request.data.get('new_password')
             
-            if not all([email, otp, new_password]):
-                return Response({'error': 'Email, OTP, and new password are required.'}, status=status.HTTP_400_BAD_REQUEST)
+            if not all([mobile_number, otp, new_password]):
+                return Response({'error': 'Mobile number, OTP, and new password are required.'}, status=status.HTTP_400_BAD_REQUEST)
                 
-            otp_obj = OTPVerification.objects.filter(email=email).first()
+            otp_obj = OTPVerification.objects.filter(mobile_number=mobile_number).first()
             if not otp_obj:
-                return Response({'error': 'No OTP found for this email.'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'No OTP found for this mobile number.'}, status=status.HTTP_400_BAD_REQUEST)
                 
-            if not otp_obj.is_valid():
-                return Response({'error': 'OTP has expired.'}, status=status.HTTP_400_BAD_REQUEST)
+            is_valid_otp = getattr(settings, 'OTP_TEST_MODE', False) or (otp_obj.is_valid() and otp_obj.otp == otp)
+            if not is_valid_otp:
+                return Response({'error': 'Invalid or expired OTP.'}, status=status.HTTP_400_BAD_REQUEST)
                 
-            if otp_obj.otp != otp:
-                return Response({'error': 'Invalid OTP.'}, status=status.HTTP_400_BAD_REQUEST)
-                
-            user = CustomUser.objects.filter(email=email).first()
+            user = CustomUser.objects.filter(mobile_number=mobile_number).first() or CustomUser.objects.filter(username=mobile_number).first()
             if not user:
                 return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
 

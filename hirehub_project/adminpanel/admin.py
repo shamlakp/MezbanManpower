@@ -19,7 +19,7 @@ class PlatformSettingsAdmin(admin.ModelAdmin):
         if self.model.objects.count() >= 1:
             return False
         return super().has_add_permission(request)
-1
+
 @admin.register(CustomUser)
 class CustomUserAdmin(admin.ModelAdmin):
     list_display = ('username', 'email', 'user_type', 'is_active', 'delete_user_link')
@@ -166,7 +166,7 @@ class CompanyProfileAdmin(admin.ModelAdmin):
 
 @admin.register(OTPVerification)
 class OTPVerificationAdmin(admin.ModelAdmin):
-    list_display = ('email', 'otp', 'created_at', 'is_verified')
-    readonly_fields = ('email', 'otp', 'created_at')
-    search_fields = ('email',)
+    list_display = ('mobile_number', 'otp', 'created_at', 'is_verified')
+    readonly_fields = ('mobile_number', 'otp', 'created_at')
+    search_fields = ('mobile_number',)
     list_filter = ('is_verified', 'created_at')

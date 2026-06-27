@@ -91,6 +91,16 @@ class AuthProvider with ChangeNotifier {
           await _apiService.saveToken(data['token']);
         }
 
+        // Fetch full profile info so that profile images show up right after login
+        try {
+          final meResponse = await _apiService.getMe();
+          if (meResponse.statusCode == 200) {
+            _userData = meResponse.data;
+          }
+        } catch (_) {
+          // Fallback to basic data if getMe fails
+        }
+
         _isAuthenticated = true;
         _isLoading = false;
         notifyListeners();

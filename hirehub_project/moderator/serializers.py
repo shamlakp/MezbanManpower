@@ -2,17 +2,17 @@ from rest_framework import serializers
 from .models import CompanyProfile, JobPost
 
 class CompanyProfileSerializer(serializers.ModelSerializer):
-    # Always return a relative path so the Flutter client can rebase correctly.
-    logo = serializers.SerializerMethodField()
-    profile_image = serializers.SerializerMethodField()
+    logo = serializers.ImageField(required=False, allow_null=True, use_url=False)
 
-    def get_logo(self, obj):
-        if obj.logo and hasattr(obj.logo, 'name') and obj.logo.name:
-            return f'/media/{obj.logo.name}'
-        return None
-
-    def get_profile_image(self, obj):
-        return self.get_logo(obj)
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        if instance.logo:
+            ret['logo'] = '/media/' + instance.logo.name.replace('\\\\', '/')
+            ret['profile_image'] = ret['logo']
+        else:
+            ret['logo'] = None
+            ret['profile_image'] = None
+        return ret
 
     class Meta:
         model = CompanyProfile
@@ -21,14 +21,13 @@ class CompanyProfileSerializer(serializers.ModelSerializer):
 
 class JobPostSerializer(serializers.ModelSerializer):
     company_name = serializers.CharField(source='company.company_name', read_only=True)
-    # Always return a relative path (e.g. /media/...) so the Flutter client
-    # can rebase it to the correct host for any environment.
-    image = serializers.SerializerMethodField()
+    image = serializers.ImageField(required=False, allow_null=True, use_url=False)
 
-    def get_image(self, obj):
-        if obj.image and hasattr(obj.image, 'name') and obj.image.name:
-            return f'/media/{obj.image.name}'
-        return None
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        if instance.image:
+            ret['image'] = '/media/' + instance.image.name.replace('\\\\', '/')
+        return ret
 
     class Meta:
         model = JobPost
@@ -47,9 +46,9 @@ class ApplicantProfileSerializer(serializers.ModelSerializer):
         ret = super().to_representation(instance)
         # Ensure profile_image and resume return relative paths (/media/...)
         if instance.profile_image:
-            ret['profile_image'] = f'/media/{instance.profile_image.name}'
+            ret['profile_image'] = '/media/' + instance.profile_image.name.replace('\\\\', '/')
         if instance.resume:
-            ret['resume'] = f'/media/{instance.resume.name}'
+            ret['resume'] = '/media/' + instance.resume.name.replace('\\\\', '/')
         return ret
 
     class Meta:

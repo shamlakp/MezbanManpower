@@ -15,10 +15,10 @@ class ApplicantRegisterScreen extends StatefulWidget {
 
 class _ApplicantRegisterScreenState extends State<ApplicantRegisterScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _username    = TextEditingController();
-  final _email       = TextEditingController();
-  final _password    = TextEditingController();
-  final _confirm     = TextEditingController();
+  final _username      = TextEditingController();
+  final _mobileNumber  = TextEditingController();
+  final _password      = TextEditingController();
+  final _confirm       = TextEditingController();
   final _otpController = TextEditingController();
 
   bool _otpSent     = false;
@@ -30,16 +30,16 @@ class _ApplicantRegisterScreenState extends State<ApplicantRegisterScreen> {
 
   Future<void> _handleAction() async {
     if (!_formKey.currentState!.validate()) return;
-    final auth  = context.read<AuthProvider>();
-    final email = _email.text.trim();
+    final auth         = context.read<AuthProvider>();
+    final mobileNumber = _mobileNumber.text.trim();
 
     if (!_otpSent) {
-      final ok = await auth.sendOTP(email);
+      final ok = await auth.sendOTP(mobileNumber);
       if (!mounted) return;
       if (ok) {
         setState(() => _otpSent = true);
         if (auth.lastOtp != null) _otpController.text = auth.lastOtp!;
-        _snack(auth.lastOtp != null ? 'OTP: ${auth.lastOtp}' : 'OTP sent to your email!', SuccessColor.c500);
+        _snack(auth.lastOtp != null ? 'OTP: ${auth.lastOtp}' : 'OTP sent to your mobile number!', SuccessColor.c500);
       } else {
         _snack(auth.errorMessage ?? 'Failed to send OTP', DangerColor.c500);
       }
@@ -47,11 +47,11 @@ class _ApplicantRegisterScreenState extends State<ApplicantRegisterScreen> {
     }
 
     if (!_otpVerified) {
-      final ok = await auth.verifyOTP(email, _otpController.text.trim());
+      final ok = await auth.verifyOTP(mobileNumber, _otpController.text.trim());
       if (!mounted) return;
       if (ok) {
         setState(() => _otpVerified = true);
-        _snack('Email verified! Set your password.', SuccessColor.c500);
+        _snack('Mobile number verified! Set your password.', SuccessColor.c500);
       } else {
         _snack(auth.errorMessage ?? 'Invalid OTP', DangerColor.c500);
       }
@@ -60,7 +60,7 @@ class _ApplicantRegisterScreenState extends State<ApplicantRegisterScreen> {
 
     final ok = await auth.registerApplicant({
       'username': _username.text.trim(),
-      'email': email,
+      'mobile_number': mobileNumber,
       'password': _password.text.trim(),
     });
     if (!mounted) return;
@@ -144,8 +144,8 @@ class _ApplicantRegisterScreenState extends State<ApplicantRegisterScreen> {
                     _buildField(controller: _username, label: 'Username', icon: Icons.person_outline_rounded,
                         enabled: !_otpVerified, validator: (v) => v!.isEmpty ? 'Required' : null),
                     const SizedBox(height: 16),
-                    _buildField(controller: _email, label: 'Email', icon: Icons.alternate_email_rounded,
-                        enabled: !_otpSent, keyboardType: TextInputType.emailAddress,
+                    _buildField(controller: _mobileNumber, label: 'Mobile Number', icon: Icons.phone_android_rounded,
+                        enabled: !_otpSent, keyboardType: TextInputType.phone,
                         validator: (v) => v!.isEmpty ? 'Required' : null),
 
                     if (_otpSent && !_otpVerified) ...[

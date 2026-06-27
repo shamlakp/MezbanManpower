@@ -4,19 +4,20 @@ from .models import PlatformSettings, CustomUser
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['id', 'username', 'email', 'full_name', 'user_type', 'is_active']
+        fields = ['id', 'username', 'email', 'mobile_number', 'full_name', 'user_type', 'is_active']
 
 class ApplicantSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
+    username = serializers.CharField(write_only=True)
 
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'password']
+        fields = ['username', 'mobile_number', 'password']
  
     def create(self, validated_data):
         user = CustomUser.objects.create_user(
             username=validated_data['username'],
-            email=validated_data['email'],
+            mobile_number=validated_data['mobile_number'],
             password=validated_data['password'],
             user_type='applicant'
         )
@@ -33,15 +34,16 @@ class PlatformSettingsSerializer(serializers.ModelSerializer):
 
 class RecruiterRegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
+    username = serializers.CharField(write_only=True)
 
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'password']
+        fields = ['username', 'mobile_number', 'password']
 
     def create(self, validated_data):
         user = CustomUser.objects.create_user(
             username=validated_data['username'],
-            email=validated_data['email'],
+            mobile_number=validated_data['mobile_number'],
             password=validated_data['password'],
             user_type='recruiter'
         )
@@ -50,6 +52,6 @@ class RecruiterRegisterSerializer(serializers.ModelSerializer):
         if not CompanyProfile.objects.filter(user=user).exists():
             CompanyProfile.objects.create(
                 user=user,
-                company_name=f"{user.username} Company"
+                company_name=f"{validated_data['username']} Company"
             )
         return user

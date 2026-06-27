@@ -20,6 +20,9 @@ class UrlHelper {
   static String resolveMediaUrl(String? path) {
     if (path == null || path.isEmpty) return '';
 
+    // Normalize path separators to forward slash
+    path = path.replaceAll('\\', '/');
+
     String baseUrl = getBaseUrl();
     if (baseUrl.endsWith('/')) {
       baseUrl = baseUrl.substring(0, baseUrl.length - 1);

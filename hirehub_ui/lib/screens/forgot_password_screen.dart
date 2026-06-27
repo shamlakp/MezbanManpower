@@ -15,7 +15,7 @@ class ForgotPasswordScreen extends StatefulWidget {
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _email = TextEditingController();
+  final _mobileNumber = TextEditingController();
   final _otpController = TextEditingController();
   final _password = TextEditingController();
   final _confirm = TextEditingController();
@@ -29,16 +29,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   Future<void> _handleAction() async {
     if (!_formKey.currentState!.validate()) return;
     final auth = context.read<AuthProvider>();
-    final email = _email.text.trim();
+    final mobileNumber = _mobileNumber.text.trim();
 
     if (!_otpSent) {
-      final ok = await auth.forgotPasswordSendOTP(email);
+      final ok = await auth.forgotPasswordSendOTP(mobileNumber);
       if (!mounted) return;
       if (ok) {
         setState(() => _otpSent = true);
         if (auth.lastOtp != null) _otpController.text = auth.lastOtp!;
         _snack(
-          auth.lastOtp != null ? 'OTP: ${auth.lastOtp}' : 'OTP sent to your email!',
+          auth.lastOtp != null ? 'OTP: ${auth.lastOtp}' : 'OTP sent to your mobile number!',
           SuccessColor.c500,
         );
       } else {
@@ -47,7 +47,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       return;
     }
 
-    final ok = await auth.resetPassword(email, _otpController.text.trim(), _password.text.trim());
+    final ok = await auth.resetPassword(mobileNumber, _otpController.text.trim(), _password.text.trim());
     if (!mounted) return;
     if (ok) {
       _snack('Password reset successful! Please log in.', SuccessColor.c500);
@@ -133,7 +133,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               const SizedBox(height: 28),
 
               // ── Step indicator ────────────────────────────────
-              _StepIndicator(step: _step, labels: const ['Email', 'New Password']),
+              _StepIndicator(step: _step, labels: const ['Mobile Number', 'New Password']),
               const SizedBox(height: 32),
 
               // ── Form ──────────────────────────────────────────
@@ -142,11 +142,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 child: Column(
                   children: [
                     _buildField(
-                      controller: _email,
-                      label: 'Email',
-                      icon: Icons.alternate_email_rounded,
+                      controller: _mobileNumber,
+                      label: 'Mobile Number',
+                      icon: Icons.phone_android_rounded,
                       enabled: !_otpSent,
-                      keyboardType: TextInputType.emailAddress,
+                      keyboardType: TextInputType.phone,
                       validator: (v) => v!.isEmpty ? 'Required' : null,
                     ),
 
