@@ -90,7 +90,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 24),
               Text(
-                'Join HireHub',
+                'Join Mezban Manpower',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w900,

@@ -81,11 +81,15 @@ class _FilterSidebarState extends State<FilterSidebar> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : const Color(0xFF191C28); // NeutralColor.c900
+    final hintColor = isDark ? Colors.white54 : const Color(0xFF64748B); // NeutralColor.c500
+
     return Container(
       width: 280,
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(right: BorderSide(color: Colors.grey[200]!)),
+        color: Theme.of(context).colorScheme.surface,
+        border: Border(right: BorderSide(color: Theme.of(context).dividerColor)),
       ),
       child: SingleChildScrollView(
         child: Column(
@@ -96,13 +100,13 @@ class _FilterSidebarState extends State<FilterSidebar> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Filters',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor),
                   ),
                   TextButton(
                     onPressed: _clearAll,
-                    child: const Text('Clear All', style: TextStyle(fontSize: 12)),
+                    child: Text('Clear All', style: TextStyle(fontSize: 12, color: const Color(0xFF0EA5E9))),
                   ),
                 ],
               ),
@@ -118,7 +122,8 @@ class _FilterSidebarState extends State<FilterSidebar> {
                     'Job Category',
                     _categories.keys.map((key) => _buildCheckbox(key, _categories[key]!, (val) {
                       setState(() => _categories[key] = val!);
-                    })).toList(),
+                    }, textColor)).toList(),
+                    textColor,
                   ),
                   const Divider(height: 40),
                   _buildFilterSection(
@@ -128,9 +133,11 @@ class _FilterSidebarState extends State<FilterSidebar> {
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
                         child: TextField(
                           controller: _locationController,
+                          style: TextStyle(color: textColor),
                           decoration: InputDecoration(
                             hintText: 'Search Location',
-                            prefixIcon: const Icon(Icons.search, size: 20),
+                            hintStyle: TextStyle(color: hintColor),
+                            prefixIcon: Icon(Icons.search, size: 20, color: hintColor),
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                             contentPadding: EdgeInsets.zero,
                           ),
@@ -138,6 +145,7 @@ class _FilterSidebarState extends State<FilterSidebar> {
                         ),
                       ),
                     ],
+                    textColor,
                   ),
                   const Divider(height: 40),
                   _buildFilterSection(
@@ -163,26 +171,28 @@ class _FilterSidebarState extends State<FilterSidebar> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(_formatSalary(_salaryRange.start)),
-                            Text('${_formatSalary(_salaryRange.end)}+'),
+                            Text(_formatSalary(_salaryRange.start), style: TextStyle(color: textColor)),
+                            Text('${_formatSalary(_salaryRange.end)}+', style: TextStyle(color: textColor)),
                           ],
                         ),
                       ),
                     ],
+                    textColor,
                   ),
                   const Divider(height: 40),
                   _buildFilterSection(
                     'Job Type',
                     _jobTypes.keys.map((key) => _buildCheckbox(key, _jobTypes[key]!, (val) {
                       setState(() => _jobTypes[key] = val!);
-                    })).toList(),
+                    }, textColor)).toList(),
+                    textColor,
                   ),
                   const SizedBox(height: 20),
                 ],
               ),
             ),
             
-            // Fixed Bottom Button (Now scrolls with content)
+            // Fixed Bottom Button
             Padding(
               padding: const EdgeInsets.all(20),
               child: SizedBox(
@@ -205,7 +215,7 @@ class _FilterSidebarState extends State<FilterSidebar> {
     );
   }
 
-  Widget _buildFilterSection(String title, List<Widget> children) {
+  Widget _buildFilterSection(String title, List<Widget> children, Color textColor) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -214,9 +224,9 @@ class _FilterSidebarState extends State<FilterSidebar> {
           children: [
             Text(
               title,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: textColor),
             ),
-            const Icon(Icons.keyboard_arrow_down, size: 20),
+            Icon(Icons.keyboard_arrow_down, size: 20, color: textColor),
           ],
         ),
         const SizedBox(height: 12),
@@ -225,7 +235,7 @@ class _FilterSidebarState extends State<FilterSidebar> {
     );
   }
 
-  Widget _buildCheckbox(String label, bool value, ValueChanged<bool?> onChanged) {
+  Widget _buildCheckbox(String label, bool value, ValueChanged<bool?> onChanged, Color textColor) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 4.0),
       child: Row(
@@ -240,11 +250,12 @@ class _FilterSidebarState extends State<FilterSidebar> {
             ),
           ),
           const SizedBox(width: 8),
-          Text(label, style: const TextStyle(fontSize: 14)),
+          Text(label, style: TextStyle(fontSize: 14, color: textColor)),
         ],
       ),
     );
   }
+
   String _formatSalary(double value) {
     if (value >= 1000000) {
       return '${(value / 1000000).toStringAsFixed(1)}M';
