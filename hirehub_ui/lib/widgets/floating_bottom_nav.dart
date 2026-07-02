@@ -16,41 +16,46 @@ class FloatingBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final items = isApplicant 
       ? [
-          _NavItem(Icons.search_rounded, 'Explore'),
-          _NavItem(Icons.dashboard_rounded, 'Stats'),
-          _NavItem(Icons.description_rounded, 'History'),
+          _NavItem(Icons.search, 'Explore', Icons.search),
+          _NavItem(Icons.dashboard_outlined, 'Stats', Icons.dashboard),
+          _NavItem(Icons.description_outlined, 'History', Icons.description),
         ]
       : [
-          _NavItem(Icons.dashboard_rounded, 'Stats'),
-          _NavItem(Icons.search_rounded, 'Feed'),
-          _NavItem(Icons.description_rounded, 'Apps'),
+          _NavItem(Icons.dashboard_outlined, 'Stats', Icons.dashboard),
+          _NavItem(Icons.search, 'Feed', Icons.search),
+          _NavItem(Icons.description_outlined, 'Apps', Icons.description),
         ];
 
     return Container(
-      margin: const EdgeInsets.fromLTRB(24, 0, 24, 30),
-      height: 70,
+      margin: const EdgeInsets.fromLTRB(20, 0, 20, 30),
+      height: 65, // slightly thinner like iOS dock
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.85),
+        color: isDark ? const Color(0xFF1C1C1E).withValues(alpha: 0.65) : const Color(0xFFF2F2F7).withValues(alpha: 0.65),
         borderRadius: BorderRadius.circular(35),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 30,
-            offset: const Offset(0, 10),
+            color: isDark ? Colors.black.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
         ],
+        border: Border.all(
+          color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
+          width: 0.5,
+        ),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(35),
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+          filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30), // Heavy blur for iOS glass effect
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: List.generate(items.length, (index) => _buildNavItem(index, items[index])),
+              children: List.generate(items.length, (index) => _buildNavItem(index, items[index], isDark)),
             ),
           ),
         ),
@@ -58,38 +63,42 @@ class FloatingBottomNav extends StatelessWidget {
     );
   }
 
-  Widget _buildNavItem(int index, _NavItem item) {
+  Widget _buildNavItem(int index, _NavItem item, bool isDark) {
     final isSelected = currentIndex == index;
+    final activeColor = isDark ? Colors.white : Colors.black;
+    final inactiveColor = isDark ? const Color(0xFF8E8E93) : const Color(0xFF8E8E93); // iOS System Gray
+
     return GestureDetector(
       onTap: () => onTap(index),
       behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected ? BrandColor.c500.withOpacity(0.1) : Colors.transparent,
-          borderRadius: BorderRadius.circular(25),
-        ),
-        child: Row(
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        color: Colors.transparent, // Removed pill shape
+        child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              item.icon,
-              color: isSelected ? BrandColor.c500 : NeutralColor.c400,
-              size: 24,
-            ),
-            if (isSelected) ...[
-              const SizedBox(width: 8),
-              Text(
-                item.label,
-                style: const TextStyle(
-                  color: BrandColor.c500,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13,
-                ),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 250),
+              transitionBuilder: (child, anim) => FadeTransition(opacity: anim, child: child),
+              child: Icon(
+                isSelected ? item.activeIcon : item.icon, // Filled when active, outlined when inactive
+                key: ValueKey<bool>(isSelected),
+                color: isSelected ? activeColor : inactiveColor,
+                size: 24,
               ),
-            ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              item.label,
+              style: TextStyle(
+                color: isSelected ? activeColor : inactiveColor,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                fontSize: 10,
+                letterSpacing: 0,
+              ),
+            ),
           ],
         ),
       ),
@@ -100,5 +109,6 @@ class FloatingBottomNav extends StatelessWidget {
 class _NavItem {
   final IconData icon;
   final String label;
-  _NavItem(this.icon, this.label);
+  final IconData activeIcon;
+  _NavItem(this.icon, this.label, this.activeIcon);
 }

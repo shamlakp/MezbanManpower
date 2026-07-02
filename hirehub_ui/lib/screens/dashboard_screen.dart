@@ -138,6 +138,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
+    final platform = context.watch<PlatformProvider>();
     final username = auth.userData?['username'] ?? 'User';
     debugPrint('DashboardScreen: userData: ${auth.userData}');
     debugPrint('DashboardScreen: Profile Image = ${auth.userData?['profile']?['profile_image']}');
@@ -197,6 +198,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         );
                       } else if (value == 'logout') {
                         _logout();
+                      } else if (value == 'theme') {
+                        platform.toggleTheme();
                       }
                     },
                   itemBuilder: (context) => [
@@ -217,6 +220,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           Icon(Icons.person_outline_rounded, color: NeutralColor.c600, size: 20),
                           const SizedBox(width: 12),
                           Text('My Profile'),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuDivider(),
+                    PopupMenuItem(
+                      value: 'theme',
+                      child: Row(
+                        children: [
+                          Icon(
+                            platform.themeMode == ThemeMode.light
+                                ? Icons.dark_mode_outlined
+                                : Icons.light_mode_outlined,
+                            color: NeutralColor.c600,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            platform.themeMode == ThemeMode.light
+                                ? 'Dark Mode'
+                                : 'Light Mode',
+                          ),
                         ],
                       ),
                     ),
@@ -285,19 +309,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ),
         actions: [
-          Consumer<PlatformProvider>(
-            builder: (context, platform, child) {
-              return IconButton(
-                icon: Icon(
-                  platform.themeMode == ThemeMode.light 
-                    ? Icons.dark_mode_outlined 
-                    : Icons.light_mode_outlined,
-                  color: Theme.of(context).colorScheme.onBackground,
-                ),
-                onPressed: () => platform.toggleTheme(),
-              );
-            },
-          ),
           Stack(
             children: [
               IconButton(

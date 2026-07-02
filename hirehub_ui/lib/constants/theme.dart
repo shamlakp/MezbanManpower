@@ -46,7 +46,8 @@ ThemeData lightTheme = ThemeData(
     titleTextStyle: TextStyle(
       fontFamily:     'Inter',
       fontSize:       18,
-      fontWeight:     FontWeight.w600,
+      fontWeight:     FontWeight.w700,
+      letterSpacing:  -0.5,
       color:          NeutralColor.c900,
     ),
   ),
@@ -99,7 +100,8 @@ ThemeData lightTheme = ThemeData(
       textStyle: const TextStyle(
         fontFamily:     'Inter',
         fontSize:       15,
-        fontWeight:     FontWeight.w600,
+        fontWeight:     FontWeight.w700,
+        letterSpacing:  -0.3,
       ),
     ),
   ),
@@ -116,7 +118,8 @@ ThemeData lightTheme = ThemeData(
       textStyle: const TextStyle(
         fontFamily:     'Inter',
         fontSize:       15,
-        fontWeight:     FontWeight.w600,
+        fontWeight:     FontWeight.w700,
+        letterSpacing:  -0.3,
       ),
     ),
   ),
@@ -128,7 +131,8 @@ ThemeData lightTheme = ThemeData(
       textStyle: const TextStyle(
         fontFamily:    'Inter',
         fontSize:      14,
-        fontWeight:    FontWeight.w600,
+        fontWeight:    FontWeight.w700,
+        letterSpacing: -0.2,
       ),
     ),
   ),
@@ -143,7 +147,7 @@ ThemeData lightTheme = ThemeData(
   // ── Chip ──────────────────────────────────────────────────
   chipTheme: const ChipThemeData(
     backgroundColor:  BrandColor.c50,
-    labelStyle:       TextStyle(color: BrandColor.c500, fontSize: 13),
+    labelStyle:       TextStyle(color: BrandColor.c500, fontSize: 13, fontWeight: FontWeight.w600),
     side:             BorderSide(color: BrandColor.c200),
     shape:            RoundedRectangleBorder(
       borderRadius:   BorderRadius.all(Radius.circular(8)),
@@ -167,18 +171,18 @@ ThemeData darkTheme = ThemeData(
     surfaceVariant:   const Color(0xFF334155), // Slate 700
 
     // ── Brand / Primary ───────────────────────────────────────
-    primary:          BrandColor.c500,
-    primaryContainer: BrandColor.c900.withOpacity(0.3),
+    primary:          Colors.white,
+    primaryContainer: Colors.white.withValues(alpha: 0.1),
 
     // ── Secondary / Accent ────────────────────────────────────
-    secondary:          IndigoColor.c300,
-    secondaryContainer: IndigoColor.c900.withOpacity(0.3),
+    secondary:          NeutralColor.c300,
+    secondaryContainer: NeutralColor.c800,
 
     // ── On-Colors (text / icons) ──────────────────────────────
     onBackground:     NeutralColor.c50,
     onSurface:        NeutralColor.c100,
-    onPrimary:        Colors.white,
-    onSecondary:      Colors.white,
+    onPrimary:        Colors.black,
+    onSecondary:      Colors.black,
     onSurfaceVariant: NeutralColor.c400,
 
     // ── Error ─────────────────────────────────────────────────
@@ -198,7 +202,8 @@ ThemeData darkTheme = ThemeData(
     titleTextStyle: TextStyle(
       fontFamily:     'Inter',
       fontSize:       18,
-      fontWeight:     FontWeight.w600,
+      fontWeight:     FontWeight.w700,
+      letterSpacing:  -0.5,
       color:          NeutralColor.c50,
     ),
   ),
@@ -241,8 +246,8 @@ ThemeData darkTheme = ThemeData(
   // ── Elevated Button ───────────────────────────────────────
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ElevatedButton.styleFrom(
-      backgroundColor:  BrandColor.c500,
-      foregroundColor:  Colors.white,
+      backgroundColor:  Colors.white,
+      foregroundColor:  Colors.black,
       elevation:        0,
       padding:          const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
       shape: const RoundedRectangleBorder(
@@ -251,7 +256,8 @@ ThemeData darkTheme = ThemeData(
       textStyle: const TextStyle(
         fontFamily:     'Inter',
         fontSize:       15,
-        fontWeight:     FontWeight.w600,
+        fontWeight:     FontWeight.w700,
+        letterSpacing:  -0.3,
       ),
     ),
   ),
@@ -268,7 +274,8 @@ ThemeData darkTheme = ThemeData(
       textStyle: const TextStyle(
         fontFamily:     'Inter',
         fontSize:       15,
-        fontWeight:     FontWeight.w600,
+        fontWeight:     FontWeight.w700,
+        letterSpacing:  -0.3,
       ),
     ),
   ),

@@ -6,16 +6,16 @@ import 'package:flutter/material.dart';
 
 class BrandColor {
   BrandColor._();
-  static const Color c50  = Color.fromARGB(255, 235, 244, 255); // Ultra light blue
-  static const Color c100 = Color.fromARGB(255, 214, 232, 255); // Very light blue
-  static const Color c200 = Color.fromARGB(255, 190, 217, 255);
-  static const Color c300 = Color.fromARGB(255, 160, 198, 255);
-  static const Color c400 = Color.fromARGB(255, 130, 179, 255);
-  static const Color c500 = Color.fromARGB(255, 71,  133, 249); // Primary brand blue
-  static const Color c600 = Color.fromARGB(255, 65,  122, 229);
-  static const Color c700 = Color.fromARGB(255, 58,  111, 208);
-  static const Color c800 = Color.fromARGB(255, 52,  100, 187);
-  static const Color c900 = Color.fromARGB(255, 46,  89,  166); // Darkest
+  static const Color c50  = Color.fromARGB(255, 245, 245, 247); // iOS system gray 6
+  static const Color c100 = Color.fromARGB(255, 229, 229, 234); // iOS system gray 5
+  static const Color c200 = Color.fromARGB(255, 209, 209, 214); // iOS system gray 4
+  static const Color c300 = Color.fromARGB(255, 199, 199, 204); // iOS system gray 3
+  static const Color c400 = Color.fromARGB(255, 174, 174, 178); // iOS system gray 2
+  static const Color c500 = Color.fromARGB(255, 28,  28,  30);  // Primary Brand (Black)
+  static const Color c600 = Color.fromARGB(255, 44,  44,  46);
+  static const Color c700 = Color.fromARGB(255, 58,  58,  60);
+  static const Color c800 = Color.fromARGB(255, 72,  72,  74);
+  static const Color c900 = Color.fromARGB(255, 99,  99,  102); 
 }
 
 class NeutralColor {

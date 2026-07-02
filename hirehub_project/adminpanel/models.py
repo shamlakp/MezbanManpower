@@ -20,6 +20,7 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return f"{self.username} ({self.user_type})"
+        
 
     def save(self, *args, **kwargs):
         if not self.email:

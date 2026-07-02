@@ -27,20 +27,35 @@ class _HeroSearchBarState extends State<HeroSearchBar> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.grey[100],
-          borderRadius: BorderRadius.circular(12),
+          color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFF767680).withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(10),
         ),
         child: TextField(
           controller: _keywordController,
-          decoration: const InputDecoration(
-            hintText: 'Search for jobs...',
-            prefixIcon: Icon(Icons.search, color: Color(0xFF0EA5E9)),
+          style: TextStyle(
+            color: isDark ? Colors.white : Colors.black,
+            fontSize: 17,
+          ),
+          decoration: InputDecoration(
+            hintText: 'Search',
+            hintStyle: TextStyle(
+              color: isDark ? const Color(0xFFEBEBF5).withValues(alpha: 0.6) : const Color(0xFF3C3C43).withValues(alpha: 0.6),
+              fontSize: 17,
+            ),
+            prefixIcon: Icon(
+              Icons.search, 
+              color: isDark ? const Color(0xFFEBEBF5).withValues(alpha: 0.6) : const Color(0xFF3C3C43).withValues(alpha: 0.6),
+            ),
             border: InputBorder.none,
-            contentPadding: EdgeInsets.symmetric(vertical: 15),
+            enabledBorder: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            contentPadding: const EdgeInsets.symmetric(vertical: 10),
           ),
           onSubmitted: (_) => _performSearch(context),
         ),
