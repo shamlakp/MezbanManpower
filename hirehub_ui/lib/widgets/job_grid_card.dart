@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import '../models/job_post.dart';
 import '../utils/url_helper.dart';
 import 'custom_button.dart';
+import '../constants/colors.dart';
 
 class JobGridCard extends StatefulWidget {
   final JobPost job;
@@ -29,8 +31,8 @@ class _JobGridCardState extends State<JobGridCard> with SingleTickerProviderStat
       vsync: this,
       duration: const Duration(milliseconds: 150),
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.98).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.96).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic),
     );
   }
 
@@ -70,29 +72,33 @@ class _JobGridCardState extends State<JobGridCard> with SingleTickerProviderStat
             return Transform.scale(
               scale: _scaleAnimation.value,
               child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOutCubic,
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                  color: isDark ? const Color(0xFF1E293B).withValues(alpha: 0.7) : Colors.white.withValues(alpha: 0.9),
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
                       color: isDark 
-                          ? Colors.black.withValues(alpha: _isHovered ? 0.3 : 0.1)
-                          : Colors.black.withValues(alpha: _isHovered ? 0.08 : 0.02),
-                      blurRadius: _isHovered ? 20 : 10,
-                      offset: Offset(0, _isHovered ? 8 : 4),
+                          ? Colors.black.withValues(alpha: _isHovered ? 0.5 : 0.2)
+                          : BrandColor.c500.withValues(alpha: _isHovered ? 0.15 : 0.05),
+                      blurRadius: _isHovered ? 30 : 15,
+                      offset: Offset(0, _isHovered ? 12 : 6),
                     ),
                   ],
                   border: Border.all(
                     color: isDark 
-                        ? Colors.white.withValues(alpha: 0.05) 
-                        : Colors.black.withValues(alpha: 0.05),
+                        ? Colors.white.withValues(alpha: 0.1) 
+                        : Colors.black.withValues(alpha: 0.03),
+                    width: 1.5,
                   ),
                 ),
                 clipBehavior: Clip.antiAlias,
-                child: Material(
-                  color: Colors.transparent,
-                  child: LayoutBuilder(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: LayoutBuilder(
                     builder: (context, constraints) {
                       final bool isCompact = constraints.maxWidth < 250;
                       return Padding(
@@ -108,8 +114,7 @@ class _JobGridCardState extends State<JobGridCard> with SingleTickerProviderStat
                             
                             const SizedBox(height: 12),
                             _buildCardDetails(widget.job, isDark),
-                            
-                            const Spacer(),
+                            const SizedBox(height: 16),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -131,6 +136,7 @@ class _JobGridCardState extends State<JobGridCard> with SingleTickerProviderStat
                       );
                     },
                   ),
+                ),
                 ),
               ),
             );

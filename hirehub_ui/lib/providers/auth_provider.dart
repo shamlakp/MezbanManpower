@@ -227,7 +227,8 @@ class AuthProvider with ChangeNotifier {
   }
 
   /// Reset Password
-  Future<bool> resetPassword(String email, String otp, String newPassword) async {
+  Future<bool> resetPassword(String email, String otp, String newPassword) async
+   {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -459,6 +460,12 @@ class AuthProvider with ChangeNotifier {
             return errorMessages.join('\n');
           }
         }
+
+
+
+
+
+        
         return 'Request failed: $data';
       }
       

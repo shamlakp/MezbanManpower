@@ -18,6 +18,8 @@ class _ApplicantApplicationsScreenState extends State<ApplicantApplicationsScree
   void initState() {
     super.initState();
     Future.microtask(() {
+
+      
       if (mounted) {
         context.read<ApplicationProvider>().fetchApplications();
       }
@@ -66,6 +68,7 @@ class _ApplicantApplicationsScreenState extends State<ApplicantApplicationsScree
 
           return RefreshIndicator(
             onRefresh: () => provider.fetchApplications(),
+            
             child: ListView.builder(
               padding: const EdgeInsets.all(12),
               itemCount: provider.applications.length,

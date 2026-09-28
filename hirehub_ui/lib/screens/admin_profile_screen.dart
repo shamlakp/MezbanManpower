@@ -47,7 +47,6 @@ class AdminProfileScreen extends StatelessWidget {
     final email = auth.userData?['email'] ?? '';
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 600),

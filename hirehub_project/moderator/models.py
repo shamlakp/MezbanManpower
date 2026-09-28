@@ -76,6 +76,7 @@ class JobPost(models.Model):
     accommodation = models.CharField(max_length=100, blank=True)
     meals = models.CharField(max_length=100, blank=True)
     category = models.CharField(max_length=100, blank=True)
+    department = models.CharField(max_length=100, blank=True)
     working_time = models.CharField(max_length=100)
     working_days = models.CharField(max_length=100)
     salary = models.CharField(max_length=100, blank=True)

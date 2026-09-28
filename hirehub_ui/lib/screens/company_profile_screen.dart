@@ -112,13 +112,12 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: NeutralColor.c50,
       appBar: AppBar(
-        title: Text('Company Profile', style: TextStyle(color: NeutralColor.c900)),
-        backgroundColor: Colors.white,
+        title: Text('Company Profile', style: TextStyle(color: isDark ? Colors.white : NeutralColor.c900)),
         elevation: 0,
-        leading: BackButton(color: NeutralColor.c900),
+        leading: BackButton(color: isDark ? Colors.white : NeutralColor.c900),
       ),
       body: _isLoading 
           ? const Center(child: CircularProgressIndicator())
@@ -136,9 +135,9 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
                           width: 100,
                           height: 100,
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.grey[300]!),
+                            border: Border.all(color: isDark ? const Color(0xFF2C2C2C) : Colors.grey[300]!),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withValues(alpha: 0.05),
@@ -170,17 +169,17 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
                     
                     const SizedBox(height: 32),
                     _buildSectionTitle('Company Information'),
-                    _buildField(controller: _companyNameController, label: 'Company Name', icon: Icons.business),
+                    _buildField(isDark: isDark, controller: _companyNameController, label: 'Company Name', icon: Icons.business),
                     const SizedBox(height: 16),
-                    _buildField(controller: _websiteController, label: 'Website', icon: Icons.language),
+                    _buildField(isDark: isDark, controller: _websiteController, label: 'Website', icon: Icons.language),
                     const SizedBox(height: 16),
-                    _buildField(controller: _addressController, label: 'Head Office Address', icon: Icons.location_on, maxLines: 2),
+                    _buildField(isDark: isDark, controller: _addressController, label: 'Head Office Address', icon: Icons.location_on, maxLines: 2),
 
                     const SizedBox(height: 32),
                     _buildSectionTitle('Recruiter Details'),
-                    _buildField(controller: _recruiterNameController, label: 'Recruiter Name', icon: Icons.person),
+                    _buildField(isDark: isDark, controller: _recruiterNameController, label: 'Recruiter Name', icon: Icons.person),
                     const SizedBox(height: 16),
-                    _buildField(controller: _recruiterContactController, label: 'Contact Number', icon: Icons.phone),
+                    _buildField(isDark: isDark, controller: _recruiterContactController, label: 'Contact Number', icon: Icons.phone),
 
                     const SizedBox(height: 40),
                     Consumer<AuthProvider>(
@@ -219,6 +218,7 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
   }
 
   Widget _buildField({
+    required bool isDark,
     required TextEditingController controller,
     required String label,
     required IconData icon,
@@ -228,12 +228,13 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
       size: MediaQuery.of(context).size,
       controller: controller,
       hintText: label,
-      hintStyle: TextStyle(color: NeutralColor.c500, fontWeight: FontWeight.w500),
+      style: TextStyle(color: isDark ? Colors.white : NeutralColor.c900, fontWeight: FontWeight.w500),
+      hintStyle: TextStyle(color: isDark ? Colors.white54 : NeutralColor.c500, fontWeight: FontWeight.w500),
       prefixIcon: Icon(icon, size: 20, color: BrandColor.c500),
-      fillColor: Colors.white,
+      fillColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: Colors.grey[300]!),
+        borderSide: BorderSide(color: isDark ? const Color(0xFF2C2C2C) : Colors.grey[300]!),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),

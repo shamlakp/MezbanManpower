@@ -60,8 +60,8 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
     // Premium Design Tokens
-    final Color neutralBg = isDark ? NeutralColor.c900 : NeutralColor.c50;
-    final Color cardBg = isDark ? NeutralColor.c800 : Colors.white;
+    final Color neutralBg = isDark ? Colors.black : NeutralColor.c50;
+    final Color cardBg = isDark ? const Color(0xFF121212) : Colors.white;
     const Color primary = BrandColor.c500;
     const Color secondary = SuccessColor.c500;
     const Color accent = WarningColor.c500;

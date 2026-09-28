@@ -24,7 +24,7 @@ from moderator.forms import JobPostForm, CompanyProfileForm
 from moderator.models import JobPost, CompanyProfile, ApplicantProfile, JobApplication
 
 from .decorators import admin_required
-from .models import CustomUser, PlatformSettings, OTPVerification
+from .models import CustomUser, PlatformSettings, OTPVerification, AdminNotification
 from .serializers import CustomUserSerializer, PlatformSettingsSerializer
 
 logger = logging.getLogger(__name__)
@@ -34,9 +34,11 @@ logger = logging.getLogger(__name__)
 def admin_dashboard(request):
     jobs = JobPost.objects.all().order_by('-id')
     recruiters = CustomUser.objects.filter(user_type='recruiter')
+    unread_notifications = AdminNotification.objects.filter(is_read=False)
     return render(request, 'adminpanel/dashboard.html', {
         'jobs': jobs,
         'recruiters': recruiters,
+        'notifications': unread_notifications,
     })
 
 @login_required
@@ -56,6 +58,14 @@ def deactivate_job(request, job_id):
     job.save()
     return redirect('adminpanel:admin_dashboard') 
 
+@login_required
+@admin_required
+def mark_notification_read(request, notif_id):
+    if request.method == 'POST':
+        notif = get_object_or_404(AdminNotification, id=notif_id)
+        notif.is_read = True
+        notif.save()
+    return redirect('adminpanel:admin_dashboard')
 
 @login_required
 def add_company(request):

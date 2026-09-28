@@ -26,7 +26,7 @@ from adminpanel.serializers import ApplicantSerializer
 from .utils import get_dashboard_url, notify_admin_on_login
 from .models import JobPost, CompanyProfile, ApplicantProfile, JobApplication 
 from .forms import RecruiterForm, ApplicantForm, CompanyProfileForm, JobPostForm
-from adminpanel.models import OTPVerification
+from adminpanel.models import OTPVerification, AdminNotification
 
 
 # --- WE REMOVED ALL WEB UI VIEWS (HOMEPAGE, DASHBOARDS, FORMS) ---
@@ -81,7 +81,19 @@ class JobPostViewSet(viewsets.ModelViewSet):
 
         if not company:
             raise ValidationError("You must choose a Company Profile you own before posting a job.")
-        serializer.save(company=company)
+        
+        job = serializer.save(company=company)
+
+        # Check for custom category
+        standard_categories = [
+            'IT', 'Design', 'Sales', 'Finance', 'HR', 'Support', 'Marketing', 'Engineering', 'Healthcare', 'Education'
+        ]
+        category = self.request.data.get('category', '').strip()
+        if category and category not in standard_categories:
+            AdminNotification.objects.create(
+                message=f"New custom category '{category}' added by {self.request.user.username}",
+                job=job
+            )
 
 
 class ApplicantRegisterAPI(APIView):

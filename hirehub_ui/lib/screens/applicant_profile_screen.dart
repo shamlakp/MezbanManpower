@@ -103,21 +103,41 @@ class _ApplicantProfileScreenState extends State<ApplicantProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final primary = BrandColor.c500;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     
     return Scaffold(
-      backgroundColor: NeutralColor.c50,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: NeutralColor.c900, size: 20),
+          icon: Icon(Icons.arrow_back_ios_new_rounded, color: isDark ? Colors.white : NeutralColor.c900, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Update Profile', style: TextStyle(color: NeutralColor.c900, fontWeight: FontWeight.w900)),
+        title: Text('Update Profile', style: TextStyle(color: isDark ? Colors.white : NeutralColor.c900, fontWeight: FontWeight.w900)),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
+      body: Stack(
+        children: [
+          // Background Watermark
+          Positioned.fill(
+            child: Center(
+              child: Transform.rotate(
+                angle: -0.5,
+                child: const Text(
+                  'MEZBANMANPOWER',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 40,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0x15000000), // Slightly more visible shadow color
+                    letterSpacing: 4.0,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
         child: Form(
           key: _formKey,
           child: Column(
@@ -178,9 +198,9 @@ class _ApplicantProfileScreenState extends State<ApplicantProfileScreen> {
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   children: [
-                    _buildModernField(controller: _fullName, label: 'Full Name', icon: Icons.person_outline_rounded),
+                    _buildModernField(isDark: isDark, controller: _fullName, label: 'Full Name', icon: Icons.person_outline_rounded),
                     const SizedBox(height: 16),
-                    _buildModernField(controller: _phone, label: 'Phone Number', icon: Icons.phone_outlined, keyboardType: TextInputType.phone),
+                    _buildModernField(isDark: isDark, controller: _phone, label: 'Phone Number', icon: Icons.phone_outlined, keyboardType: TextInputType.phone),
                   ],
                 ),
               ),
@@ -188,13 +208,13 @@ class _ApplicantProfileScreenState extends State<ApplicantProfileScreen> {
               _buildSectionTitle('Professional Bio'),
               GlassCard(
                 padding: const EdgeInsets.all(20),
-                child: _buildModernField(controller: _bio, label: 'Tell us about yourself', icon: Icons.info_outline_rounded, maxLines: 4),
+                child: _buildModernField(isDark: isDark, controller: _bio, label: 'Tell us about yourself', icon: Icons.info_outline_rounded, maxLines: 4),
               ),
               const SizedBox(height: 32),
               _buildSectionTitle('Skills & Expertise'),
               GlassCard(
                 padding: const EdgeInsets.all(20),
-                child: _buildModernField(controller: _skills, label: 'Skills (e.g. Flutter, Design)', icon: Icons.code_rounded),
+                child: _buildModernField(isDark: isDark, controller: _skills, label: 'Skills (e.g. Flutter, Design)', icon: Icons.code_rounded),
               ),
               const SizedBox(height: 32),
               _buildSectionTitle('Resume'),
@@ -241,6 +261,8 @@ class _ApplicantProfileScreenState extends State<ApplicantProfileScreen> {
           ),
         ),
       ),
+        ],
+      ),
     );
   }
 
@@ -255,6 +277,7 @@ class _ApplicantProfileScreenState extends State<ApplicantProfileScreen> {
   }
 
   Widget _buildModernField({
+    required bool isDark,
     required TextEditingController controller,
     required String label,
     required IconData icon,
@@ -266,12 +289,12 @@ class _ApplicantProfileScreenState extends State<ApplicantProfileScreen> {
       controller: controller,
       maxLines: maxLines,
       keyboardType: keyboardType,
-      style: const TextStyle(fontWeight: FontWeight.w600, color: NeutralColor.c900),
+      style: TextStyle(fontWeight: FontWeight.w600, color: isDark ? Colors.white : NeutralColor.c900),
       hintText: label,
-      hintStyle: const TextStyle(color: NeutralColor.c400, fontWeight: FontWeight.w500),
+      hintStyle: TextStyle(color: isDark ? Colors.white54 : NeutralColor.c400, fontWeight: FontWeight.w500),
       prefixIcon: Icon(icon, color: BrandColor.c500, size: 20),
-      fillColor: Colors.white,
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: NeutralColor.c200)),
+      fillColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: isDark ? const Color(0xFF2C2C2C) : NeutralColor.c200)),
       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: BrandColor.c500, width: 2)),
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
     );

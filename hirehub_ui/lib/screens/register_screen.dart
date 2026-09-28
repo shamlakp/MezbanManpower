@@ -84,13 +84,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: NeutralColor.c50,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded, color: NeutralColor.c900, size: 20),
+          icon: Icon(Icons.arrow_back_ios_new_rounded, color: (isDark ? Colors.white : NeutralColor.c900), size: 20),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -107,7 +107,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
-                    color: BrandColor.c50,
+                    color: (isDark ? const Color(0xFF121212) : BrandColor.c50),
                     shape: BoxShape.circle,
                     boxShadow: [BoxShadow(color: BrandColor.c200.withOpacity(0.4), blurRadius: 20, offset: const Offset(0, 8))],
                   ),
@@ -118,10 +118,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
               Center(
                 child: RichText(
                   text: TextSpan(
-                    style: TextStyle(fontSize: 26, color: NeutralColor.c900, letterSpacing: -0.5),
+                    style: TextStyle(fontSize: 26, color: (isDark ? Colors.white : NeutralColor.c900), letterSpacing: -0.5),
                     children: [
                       const TextSpan(text: 'Recruiter ', style: TextStyle(fontWeight: FontWeight.w700)),
-                      TextSpan(text: 'Registration', style: TextStyle(color: NeutralColor.c500, fontWeight: FontWeight.w400)),
+                      TextSpan(text: 'Registration', style: TextStyle(color: (isDark ? Colors.white54 : NeutralColor.c500), fontWeight: FontWeight.w400)),
                     ],
                   ),
                 ),
@@ -129,7 +129,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const SizedBox(height: 6),
               Center(
                 child: Text('Post jobs and find the best talent',
-                    style: TextStyle(fontSize: 14, color: NeutralColor.c600)),
+                    style: TextStyle(fontSize: 14, color: (isDark ? Colors.white60 : NeutralColor.c600))),
               ),
               const SizedBox(height: 28),
 
@@ -142,28 +142,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 key: _formKey,
                 child: Column(
                   children: [
-                    _buildField(controller: _username, label: 'Username', icon: Icons.person_outline_rounded,
+                    _buildField(isDark: isDark, controller: _username, label: 'Username', icon: Icons.person_outline_rounded,
                         enabled: !_otpVerified, validator: (v) => v!.isEmpty ? 'Required' : null),
                     const SizedBox(height: 16),
-                    _buildField(controller: _mobileNumber, label: 'Mobile Number', icon: Icons.phone_android_rounded,
+                    _buildField(isDark: isDark, controller: _mobileNumber, label: 'Mobile Number', icon: Icons.phone_android_rounded,
                         enabled: !_otpSent, keyboardType: TextInputType.phone,
                         validator: (v) => v!.isEmpty ? 'Required' : null),
 
                     if (_otpSent && !_otpVerified) ...[
                       const SizedBox(height: 16),
-                      _buildField(controller: _otpController, label: 'Enter 6-digit OTP', icon: Icons.pin_rounded,
+                      _buildField(isDark: isDark, controller: _otpController, label: 'Enter 6-digit OTP', icon: Icons.pin_rounded,
                           keyboardType: TextInputType.number,
                           validator: (v) => v!.isEmpty ? 'Required' : null),
                     ],
 
                     if (_otpVerified) ...[
                       const SizedBox(height: 16),
-                      _buildField(controller: _password, label: 'Password', icon: Icons.lock_outline_rounded,
+                      _buildField(isDark: isDark, controller: _password, label: 'Password', icon: Icons.lock_outline_rounded,
                           isPassword: true, obscure: _obscurePass,
                           onToggle: () => setState(() => _obscurePass = !_obscurePass),
                           validator: (v) => v!.length < 6 ? 'Min 6 characters' : null),
                       const SizedBox(height: 16),
-                      _buildField(controller: _confirm, label: 'Confirm Password', icon: Icons.lock_outline_rounded,
+                      _buildField(isDark: isDark, controller: _confirm, label: 'Confirm Password', icon: Icons.lock_outline_rounded,
                           isPassword: true, obscure: _obscureConf,
                           onToggle: () => setState(() => _obscureConf = !_obscureConf),
                           validator: (v) => v != _password.text ? 'Passwords do not match' : null),
@@ -191,7 +191,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text('Already have an account? ', style: TextStyle(color: NeutralColor.c600)),
+                        Text('Already have an account? ', style: TextStyle(color: (isDark ? Colors.white60 : NeutralColor.c600))),
                         GestureDetector(
                           onTap: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen())),
                           child: Text('Sign In', style: TextStyle(color: BrandColor.c500, fontWeight: FontWeight.w800)),
@@ -210,6 +210,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Widget _buildField({
+    required bool isDark,
     required TextEditingController controller,
     required String label,
     required IconData icon,
@@ -227,19 +228,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
       obscureText: isPassword && obscure,
       keyboardType: keyboardType,
       validator: validator,
-      style: TextStyle(fontWeight: FontWeight.w600, color: enabled ? NeutralColor.c900 : NeutralColor.c500),
+      style: TextStyle(fontWeight: FontWeight.w600, color: enabled ? (isDark ? Colors.white : NeutralColor.c900) : (isDark ? Colors.white54 : NeutralColor.c500)),
       hintText: label,
-      hintStyle: TextStyle(color: NeutralColor.c500, fontWeight: FontWeight.w500),
+      hintStyle: TextStyle(color: (isDark ? Colors.white54 : NeutralColor.c500), fontWeight: FontWeight.w500),
       prefixIcon: Icon(icon, color: enabled ? BrandColor.c500 : NeutralColor.c400, size: 20),
       suffixIcon: isPassword
           ? IconButton(
               icon: Icon(obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                  color: NeutralColor.c500, size: 20),
+                  color: (isDark ? Colors.white54 : NeutralColor.c500), size: 20),
               onPressed: onToggle,
             )
           : null,
-      fillColor: enabled ? NeutralColor.c100 : NeutralColor.c200,
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: NeutralColor.c200)),
+      fillColor: enabled ? (isDark ? const Color(0xFF1E1E1E) : NeutralColor.c100) : (isDark ? const Color(0xFF2C2C2C) : NeutralColor.c200),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: (isDark ? const Color(0xFF2C2C2C) : NeutralColor.c200))),
       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: BrandColor.c500, width: 1.5)),
       contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
     );
@@ -254,6 +255,7 @@ class _StepIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
       children: List.generate(labels.length * 2 - 1, (i) {
         if (i.isOdd) {
@@ -261,7 +263,7 @@ class _StepIndicator extends StatelessWidget {
           return Expanded(
             child: Container(
               height: 2,
-              color: lineStep < step ? BrandColor.c500 : NeutralColor.c200,
+              color: lineStep < step ? BrandColor.c500 : (isDark ? const Color(0xFF2C2C2C) : NeutralColor.c200),
             ),
           );
         }
@@ -275,19 +277,19 @@ class _StepIndicator extends StatelessWidget {
               width: 32, height: 32,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: done ? BrandColor.c500 : (active ? BrandColor.c50 : NeutralColor.c200),
+                color: done ? BrandColor.c500 : (active ? BrandColor.c50 : (isDark ? const Color(0xFF2C2C2C) : NeutralColor.c200)),
                 border: Border.all(color: active ? BrandColor.c500 : Colors.transparent, width: 2),
               ),
               child: Center(
                 child: done
                     ? const Icon(Icons.check_rounded, color: Colors.white, size: 16)
                     : Text('${idx + 1}', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700,
-                        color: active ? BrandColor.c500 : NeutralColor.c600)),
+                        color: active ? BrandColor.c500 : (isDark ? Colors.white60 : NeutralColor.c600))),
               ),
             ),
             const SizedBox(height: 4),
             Text(labels[idx], style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600,
-                color: active ? BrandColor.c500 : NeutralColor.c500)),
+                color: active ? BrandColor.c500 : (isDark ? Colors.white54 : NeutralColor.c500))),
           ],
         );
       }),

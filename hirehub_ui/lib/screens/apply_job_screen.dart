@@ -97,13 +97,12 @@ class _ApplyJobScreenState extends State<ApplyJobScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: NeutralColor.c50,
       appBar: AppBar(
-        title: Text('Apply for Job', style: TextStyle(color: NeutralColor.c900, fontWeight: FontWeight.w900)),
-        backgroundColor: Colors.white,
+        title: Text('Apply for Job', style: TextStyle(color: isDark ? Colors.white : NeutralColor.c900, fontWeight: FontWeight.w900)),
         elevation: 0,
-        leading: BackButton(color: NeutralColor.c900, onPressed: () => Navigator.pop(context)),
+        leading: BackButton(color: isDark ? Colors.white : NeutralColor.c900, onPressed: () => Navigator.pop(context)),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -167,6 +166,11 @@ class _ApplyJobScreenState extends State<ApplyJobScreen> {
                 size: MediaQuery.of(context).size,
                 controller: _nameController,
                 hintText: 'Full Name',
+                fillColor: isDark ? const Color(0xFF1E1E1E) : NeutralColor.c100,
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: isDark ? const Color(0xFF2C2C2C) : NeutralColor.c200)),
+                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: BrandColor.c500, width: 1.5)),
+                style: TextStyle(color: isDark ? Colors.white : NeutralColor.c900, fontWeight: FontWeight.w600),
+                hintStyle: TextStyle(color: isDark ? Colors.white54 : NeutralColor.c500),
                 validator: (value) => value!.isEmpty ? 'Please enter your name' : null,
               ),
               const SizedBox(height: 16),
@@ -176,6 +180,11 @@ class _ApplyJobScreenState extends State<ApplyJobScreen> {
                 controller: _emailController,
                 hintText: 'Email Address',
                 keyboardType: TextInputType.emailAddress,
+                fillColor: isDark ? const Color(0xFF1E1E1E) : NeutralColor.c100,
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: isDark ? const Color(0xFF2C2C2C) : NeutralColor.c200)),
+                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: BrandColor.c500, width: 1.5)),
+                style: TextStyle(color: isDark ? Colors.white : NeutralColor.c900, fontWeight: FontWeight.w600),
+                hintStyle: TextStyle(color: isDark ? Colors.white54 : NeutralColor.c500),
                 validator: (value) => value!.contains('@') ? null : 'Please enter a valid email',
               ),
               const SizedBox(height: 16),
@@ -185,6 +194,11 @@ class _ApplyJobScreenState extends State<ApplyJobScreen> {
                 controller: _phoneController,
                 hintText: 'Phone Number',
                 keyboardType: TextInputType.phone,
+                fillColor: isDark ? const Color(0xFF1E1E1E) : NeutralColor.c100,
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: isDark ? const Color(0xFF2C2C2C) : NeutralColor.c200)),
+                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: BrandColor.c500, width: 1.5)),
+                style: TextStyle(color: isDark ? Colors.white : NeutralColor.c900, fontWeight: FontWeight.w600),
+                hintStyle: TextStyle(color: isDark ? Colors.white54 : NeutralColor.c500),
                 validator: (value) => value!.isEmpty ? 'Please enter your phone number' : null,
               ),
 
@@ -200,8 +214,8 @@ class _ApplyJobScreenState extends State<ApplyJobScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: NeutralColor.c200),
+                  color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                  border: Border.all(color: isDark ? const Color(0xFF2C2C2C) : NeutralColor.c200),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Column(
@@ -254,6 +268,11 @@ class _ApplyJobScreenState extends State<ApplyJobScreen> {
                 controller: _coverLetterController,
                 hintText: 'Cover Letter (Optional)',
                 maxLines: 5,
+                fillColor: isDark ? const Color(0xFF1E1E1E) : NeutralColor.c100,
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: isDark ? const Color(0xFF2C2C2C) : NeutralColor.c200)),
+                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: BrandColor.c500, width: 1.5)),
+                style: TextStyle(color: isDark ? Colors.white : NeutralColor.c900, fontWeight: FontWeight.w600),
+                hintStyle: TextStyle(color: isDark ? Colors.white54 : NeutralColor.c500),
               ),
 
               const SizedBox(height: 32),

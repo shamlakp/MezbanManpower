@@ -63,6 +63,7 @@ class JobProvider with ChangeNotifier {
         }
       }
 
+
       _jobs = jobList
           .map((json) => JobPost.fromJson(json as Map<String, dynamic>))
           .toList();
@@ -102,6 +103,7 @@ class JobProvider with ChangeNotifier {
         'accommodation': data['accommodation'] ?? '',
         'meals': data['meals'] ?? '',
         'category': data['category'] ?? '',
+        'department': data['department'] ?? '',
         'company': data['company'], // Include company ID for multi-company support
       };
 

@@ -26,6 +26,7 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
   final _positionController = TextEditingController();
   final _categoryController = TextEditingController(); // New
   final _industryController = TextEditingController(); // New
+  final _departmentController = TextEditingController(); // Optional department
   
   // Requirements
   final _vacanciesController = TextEditingController();
@@ -52,6 +53,12 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
   List<Map<String, dynamic>> _companies = [];
   int? _selectedCompanyId;
   bool _isLoadingCompanies = true;
+
+  String? _selectedCategory;
+  bool _isCustomCategory = false;
+  final List<String> _standardCategories = [
+    'IT', 'Design', 'Sales', 'Finance', 'HR', 'Support', 'Marketing', 'Engineering', 'Healthcare', 'Education', 'Other / Add New'
+  ];
 
   @override
   void initState() {
@@ -80,6 +87,7 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
     _positionController.dispose();
     _categoryController.dispose();
     _industryController.dispose();
+    _departmentController.dispose();
     _vacanciesController.dispose();
     _responsibilitiesController.dispose();
     _qualificationsController.dispose();
@@ -120,8 +128,9 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
     final success = await context.read<JobProvider>().createJob(
       {
         'position': _positionController.text,
-        'category': _categoryController.text,
+        'category': _isCustomCategory ? _categoryController.text : (_selectedCategory ?? ''),
         'industry': _industryController.text,
+        'department': _departmentController.text,
         'noOfVacancies': int.parse(_vacanciesController.text),
         'responsibilities': _responsibilitiesController.text,
         'qualifications': _qualificationsController.text,
@@ -155,14 +164,14 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Post a New Job'),
-        backgroundColor: Colors.white,
-        foregroundColor: NeutralColor.c900,
+        title: Text('Post a New Job', style: TextStyle(color: isDark ? Colors.white : NeutralColor.c900)),
+        centerTitle: true,
+        foregroundColor: isDark ? Colors.white : NeutralColor.c900,
         elevation: 0,
       ),
-      backgroundColor: NeutralColor.c50, // Background color
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Form(
@@ -176,9 +185,9 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
                 child: Container(
                   height: 180,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey[300]!),
+                    border: Border.all(color: isDark ? const Color(0xFF2C2C2C) : Colors.grey[300]!),
                   ),
                   child: (_selectedImage != null || _webImage != null)
                       ? ClipRRect(
@@ -209,14 +218,16 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.grey[300]!),
+                    border: Border.all(color: isDark ? const Color(0xFF2C2C2C) : Colors.grey[300]!),
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<int>(
                       value: _selectedCompanyId,
                       isExpanded: true,
+                      dropdownColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                      style: TextStyle(color: isDark ? Colors.white : NeutralColor.c900),
                       items: _companies.map((c) {
                         return DropdownMenuItem<int>(
                           value: c['id'] as int,
@@ -230,47 +241,53 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
               const SizedBox(height: 24),
 
               _buildSectionTitle('Job Overview'),
-              _buildField(controller: _positionController, label: 'Job Position', icon: Icons.work_outline),
+              _buildField(isDark: isDark, controller: _positionController, label: 'Job Position', icon: Icons.work_outline),
               const SizedBox(height: 16),
-              _buildField(controller: _categoryController, label: 'Category', hint: 'e.g. IT, Healthcare', icon: Icons.category_outlined),
+              _buildCategoryDropdown(isDark: isDark),
+              if (_isCustomCategory) ...[
+                const SizedBox(height: 16),
+                _buildField(isDark: isDark, controller: _categoryController, label: 'Custom Category', hint: 'Type your new category here', icon: Icons.edit_outlined),
+              ],
               const SizedBox(height: 16),
-              _buildField(controller: _industryController, label: 'Industry', hint: 'e.g. Software, Hospital', icon: Icons.business_outlined),
+              _buildField(isDark: isDark, controller: _industryController, label: 'Industry', hint: 'e.g. Software, Hospital', icon: Icons.business_outlined),
+              const SizedBox(height: 16),
+              _buildField(isDark: isDark, controller: _departmentController, label: 'Department (Optional)', hint: 'e.g. Cardiology, IT Support', icon: Icons.domain_outlined, isRequired: false),
               
               const SizedBox(height: 24),
               _buildSectionTitle('Requirements'),
-              _buildField(controller: _vacanciesController, label: 'No. of Vacancies', icon: Icons.people_outline, keyboardType: TextInputType.number),
+              _buildField(isDark: isDark, controller: _vacanciesController, label: 'No. of Vacancies', icon: Icons.people_outline, keyboardType: TextInputType.number),
               const SizedBox(height: 16),
-              _buildField(controller: _qualificationsController, label: 'Qualifications', hint: 'e.g. Degree in CS', icon: Icons.school_outlined, maxLines: 2),
+              _buildField(isDark: isDark, controller: _qualificationsController, label: 'Qualifications', hint: 'e.g. Degree in CS', icon: Icons.school_outlined, maxLines: 2),
               const SizedBox(height: 16),
-              _buildField(controller: _responsibilitiesController, label: 'Responsibilities', hint: 'Key duties...', icon: Icons.description_outlined, maxLines: 3),
+              _buildField(isDark: isDark, controller: _responsibilitiesController, label: 'Responsibilities', hint: 'Key duties...', icon: Icons.description_outlined, maxLines: 3),
 
               const SizedBox(height: 24),
               _buildSectionTitle('Terms & Compensation'),
               Row(
                 children: [
-                  Expanded(child: _buildField(controller: _locationController, label: 'Location', icon: Icons.location_on_outlined)),
+                  Expanded(child: _buildField(isDark: isDark, controller: _locationController, label: 'Location', icon: Icons.location_on_outlined)),
                   const SizedBox(width: 16),
-                  Expanded(child: _buildField(controller: _salaryController, label: 'Salary', icon: Icons.payments_outlined)),
+                  Expanded(child: _buildField(isDark: isDark, controller: _salaryController, label: 'Salary', icon: Icons.payments_outlined)),
                 ],
               ),
               const SizedBox(height: 16),
               Row(
                 children: [
-                  Expanded(child: _buildField(controller: _workingTimeController, label: 'Working Time', icon: Icons.access_time)),
+                  Expanded(child: _buildField(isDark: isDark, controller: _workingTimeController, label: 'Working Time', icon: Icons.access_time)),
                   const SizedBox(width: 16),
-                  Expanded(child: _buildField(controller: _workingDaysController, label: 'Working Days', icon: Icons.calendar_today)),
+                  Expanded(child: _buildField(isDark: isDark, controller: _workingDaysController, label: 'Working Days', icon: Icons.calendar_today)),
                 ],
               ),
               const SizedBox(height: 16),
-              _buildField(controller: _annualLeaveController, label: 'Annual Leave (Days)', icon: Icons.flight_takeoff, keyboardType: TextInputType.number),
+              _buildField(isDark: isDark, controller: _annualLeaveController, label: 'Annual Leave (Days)', icon: Icons.flight_takeoff, keyboardType: TextInputType.number),
 
               const SizedBox(height: 24),
               _buildSectionTitle('Perks & Facilities'),
-              _buildField(controller: _accommodationController, label: 'Accommodation', hint: 'e.g. Provided', icon: Icons.home_work_outlined),
+              _buildField(isDark: isDark, controller: _accommodationController, label: 'Accommodation', hint: 'e.g. Provided', icon: Icons.home_work_outlined),
               const SizedBox(height: 16),
-              _buildField(controller: _mealsController, label: 'Meals', hint: 'e.g. Not included', icon: Icons.restaurant_outlined),
+              _buildField(isDark: isDark, controller: _mealsController, label: 'Meals', hint: 'e.g. Not included', icon: Icons.restaurant_outlined),
               const SizedBox(height: 16),
-              _buildField(controller: _benefitsController, label: 'Other Benefits', hint: 'e.g. Insurance, Transport', icon: Icons.card_giftcard, maxLines: 2),
+              _buildField(isDark: isDark, controller: _benefitsController, label: 'Other Benefits', hint: 'e.g. Insurance, Transport', icon: Icons.card_giftcard, maxLines: 2),
 
               const SizedBox(height: 32),
               _isSubmitting
@@ -301,24 +318,65 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
     );
   }
 
+  Widget _buildCategoryDropdown({required bool isDark}) {
+    return DropdownButtonFormField<String>(
+      value: _selectedCategory,
+      dropdownColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+      style: TextStyle(color: isDark ? Colors.white : NeutralColor.c900),
+      decoration: InputDecoration(
+        labelText: 'Category',
+        labelStyle: TextStyle(color: isDark ? Colors.white54 : NeutralColor.c500, fontWeight: FontWeight.w500),
+        prefixIcon: const Icon(Icons.category_outlined, size: 20, color: BrandColor.c500),
+        fillColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+        filled: true,
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: isDark ? const Color(0xFF2C2C2C) : NeutralColor.c200),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: BrandColor.c500, width: 1.5),
+        ),
+      ),
+      items: _standardCategories.map((cat) {
+        return DropdownMenuItem(value: cat, child: Text(cat));
+      }).toList(),
+      onChanged: (val) {
+        setState(() {
+          _selectedCategory = val;
+          _isCustomCategory = (val == 'Other / Add New');
+          if (!_isCustomCategory) {
+            _categoryController.text = val ?? '';
+          } else {
+            _categoryController.clear();
+          }
+        });
+      },
+      validator: (val) => val == null || val.isEmpty ? 'Please select a category' : null,
+    );
+  }
+
   Widget _buildField({
+    required bool isDark,
     required TextEditingController controller,
     required String label,
     String? hint,
     required IconData icon,
     TextInputType keyboardType = TextInputType.text,
     int maxLines = 1,
+    bool isRequired = true,
   }) {
     return CustomTextFormField(
       size: MediaQuery.of(context).size,
       controller: controller,
-      hintText: label,
-      hintStyle: TextStyle(color: NeutralColor.c500, fontWeight: FontWeight.w500),
+      hintText: hint ?? label,
+      style: TextStyle(color: isDark ? Colors.white : NeutralColor.c900, fontWeight: FontWeight.w500),
+      hintStyle: TextStyle(color: isDark ? Colors.white54 : NeutralColor.c500, fontWeight: FontWeight.w500),
       prefixIcon: Icon(icon, size: 20, color: BrandColor.c500),
-      fillColor: Colors.white,
+      fillColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: NeutralColor.c200),
+        borderSide: BorderSide(color: isDark ? const Color(0xFF2C2C2C) : NeutralColor.c200),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -326,7 +384,12 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
       ),
       keyboardType: keyboardType,
       maxLines: maxLines,
-      validator: (value) => value!.isEmpty ? 'Required' : null,
+      validator: (value) {
+        if (isRequired && (value == null || value.isEmpty)) {
+          return 'Required';
+        }
+        return null;
+      },
     );
   }
 }

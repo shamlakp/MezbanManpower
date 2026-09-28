@@ -5,6 +5,34 @@
         <h2 class="h3 fw-bold text-dark">Dashboard</h2>
         <span class="badge bg-primary rounded-pill px-3 py-2">Admin Panel</span>
     </div>
+    </div>
+
+    <!-- Notifications Section -->
+    {% if notifications %}
+    <div class="card border-0 shadow-sm rounded-4 mb-4 border-start border-4 border-warning">
+        <div class="card-header bg-white border-bottom py-3">
+            <h3 class="h5 mb-0 fw-bold text-secondary">
+                <span class="text-warning me-2">⚠️</span> New Custom Categories
+            </h3>
+        </div>
+        <div class="card-body p-0">
+            <ul class="list-group list-group-flush rounded-bottom">
+                {% for notif in notifications %}
+                <li class="list-group-item px-4 py-3 d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="fw-bold text-dark">{{ notif.message }}</span>
+                        <small class="text-muted d-block">{{ notif.created_at|date:"M d, Y H:i" }}</small>
+                    </div>
+                    <form method="POST" action="{% url 'adminpanel:mark_notification_read' notif.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-secondary rounded-pill">Dismiss</button>
+                    </form>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endif %}
 
     <!-- Job Posts Section -->
     <div class="card border-0 shadow-sm rounded-4">

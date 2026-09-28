@@ -67,10 +67,8 @@ class _ApplicantDashboardScreenState extends State<ApplicantDashboardScreen> {
     final fullName = user?['full_name'] ?? user?['username'] ?? 'Explorer';
 
     return Scaffold(
-      backgroundColor: NeutralColor.c50,
       appBar: widget.showAppBar
           ? AppBar(
-              backgroundColor: NeutralColor.c50,
               elevation: 0,
               leading: IconButton(
                 icon: Icon(Icons.arrow_back_ios_new_rounded, color: NeutralColor.c900, size: 20),

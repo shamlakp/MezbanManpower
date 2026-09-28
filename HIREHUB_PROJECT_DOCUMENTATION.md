@@ -23,6 +23,14 @@ The backend is built using Django and Django REST Framework (DRF).
 - `adminpanel`: Handles custom user models, authentication, OTP verification, and platform settings.
 - `moderator`: Manages job posts, company profiles, applicant profiles, and applications.
 
+### Core Frameworks & Libraries
+- **Django (v5.0.1)**: Core web framework.
+- **Django REST Framework (DRF)**: Serializes database models into JSON and handles endpoints with Token Authentication.
+- **django-cors-headers**: Manages cross-origin resource sharing (CORS).
+- **Whitenoise**: Serves static files efficiently.
+- **Pillow**: Handles image uploads (avatars, logos, resumes).
+- **Django Environ**: Securely manages environment variables.
+
 ### Data Models
 
 #### User & Profile Models
@@ -86,6 +94,16 @@ The frontend is a cross-platform Flutter application (Mobile & Web).
 - **HeroSearchBar**: A modern, interactive search bar with filtering options.
 - **JobGridCard**: A premium card design for displaying job summaries.
 - **CategoryScroll**: Horizontal scrolling category selector.
+
+### Core Frameworks & Packages
+- **Provider**: Primary state management solution.
+- **Dio**: HTTP client for robust API networking.
+- **Lottie**: Renders high-quality animations.
+- **Shimmer**: Provides skeleton loading effects.
+- **flutter_staggered_grid_view**: Enables modern masonry layouts.
+- **flutter_card_swiper**: Used for swipeable card interfaces.
+- **fl_chart**: Renders data visualizations and statistics.
+- **Geolocator & Geocoding**: Provides location-aware features.
 
 ### Key Screens
 - **DashboardScreen**: The main entry point displaying featured jobs and search.

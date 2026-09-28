@@ -96,7 +96,7 @@ class _RecruiterProfileScreenState extends State<RecruiterProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const primary = Color(0xFF0EA5E9);
+    const primary = Color(0xFF000000); // Apple minimalist black
     
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFB),
@@ -104,14 +104,14 @@ class _RecruiterProfileScreenState extends State<RecruiterProfileScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF1E293B), size: 20),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Recruiter Profile', style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.w900)),
+        title: const Text('Recruiter Profile', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600, fontSize: 17, letterSpacing: -0.5)),
         centerTitle: true,
       ),
       body: _isLoading 
-          ? const Center(child: CircularProgressIndicator(color: primary))
+          ? const Center(child: CircularProgressIndicator(color: Colors.black))
           : SingleChildScrollView(
               padding: const EdgeInsets.all(24.0),
               child: Form(
@@ -137,11 +137,11 @@ class _RecruiterProfileScreenState extends State<RecruiterProfileScreen> {
                                 child: _pickedLogo != null 
                                     ? (kIsWeb ? Image.memory(_pickedLogo!.bytes!, fit: BoxFit.cover) : const Icon(Icons.check, color: primary))
                                     : (_existingLogoUrl != null 
-                                        ? Image.network(_getImageUrl(_existingLogoUrl!), fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(Icons.business, size: 40, color: Color(0xFF94A3B8)))
-                                        : const Icon(Icons.add_a_photo_outlined, size: 32, color: Color(0xFF94A3B8))),
+                                        ? Image.network(_getImageUrl(_existingLogoUrl!), fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(Icons.business, size: 40, color: Color(0xFF8E8E93)))
+                                        : const Icon(Icons.add_a_photo_outlined, size: 32, color: Color(0xFF8E8E93))),
                               ),
                             ),
-                            Positioned(bottom: 0, right: 0, child: Container(padding: const EdgeInsets.all(6), decoration: const BoxDecoration(color: primary, shape: BoxShape.circle), child: const Icon(Icons.edit, color: Colors.white, size: 14))),
+                            Positioned(bottom: 0, right: 0, child: Container(padding: const EdgeInsets.all(6), decoration: const BoxDecoration(color: Colors.black, shape: BoxShape.circle), child: const Icon(Icons.edit, color: Colors.white, size: 14))),
                           ],
                         ),
                       ),
@@ -171,7 +171,7 @@ class _RecruiterProfileScreenState extends State<RecruiterProfileScreen> {
                               elevation: 0,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                               text: 'Save Profile',
-                              textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white),
+                              textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white),
                             ),
                     ),
                     const SizedBox(height: 40),
@@ -187,7 +187,7 @@ class _RecruiterProfileScreenState extends State<RecruiterProfileScreen> {
       padding: const EdgeInsets.only(left: 4, bottom: 12),
       child: Text(
         title.toUpperCase(),
-        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFF94A3B8), letterSpacing: 1),
+        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF8E8E93), letterSpacing: 0.5),
       ),
     );
   }
@@ -199,14 +199,14 @@ class _RecruiterProfileScreenState extends State<RecruiterProfileScreen> {
       maxLines: maxLines,
       keyboardType: keyboardType,
       validator: (v) => v!.isEmpty ? 'Required' : null,
-      style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+      style: const TextStyle(fontWeight: FontWeight.w500, color: Colors.black),
       hintText: label,
-      hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontWeight: FontWeight.w500),
-      prefixIcon: Icon(icon, color: const Color(0xFF0EA5E9), size: 20),
+      hintStyle: const TextStyle(color: Color(0xFF8E8E93), fontWeight: FontWeight.w400),
+      prefixIcon: Icon(icon, color: const Color(0xFF8E8E93), size: 20),
       fillColor: Colors.white,
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFF0EA5E9), width: 2)),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFD1D1D6))),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     );
   }
 

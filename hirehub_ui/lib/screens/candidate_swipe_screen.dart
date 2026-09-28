@@ -66,7 +66,6 @@ class _CandidateSwipeScreenState extends State<CandidateSwipeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: NeutralColor.c50,
       appBar: AppBar(
         title: const Text(
           'Discover Talent',

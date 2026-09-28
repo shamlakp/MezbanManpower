@@ -23,6 +23,7 @@ class JobPost {
   final String accommodation;
   final String meals;
   final String category;
+  final String department;
   final DateTime createdAt;
 
   JobPost({
@@ -46,6 +47,7 @@ class JobPost {
     this.accommodation = '',
     this.meals = '',
     this.category = '',
+    this.department = '',
   });
 
   factory JobPost.fromJson(Map<String, dynamic> json) {
@@ -70,6 +72,7 @@ class JobPost {
       accommodation: json['accommodation'] ?? '',
       meals: json['meals'] ?? '',
       category: json['category'] ?? '',
+      department: json['department'] ?? '',
     );
   }
 }

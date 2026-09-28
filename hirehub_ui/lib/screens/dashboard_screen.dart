@@ -159,11 +159,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return Scaffold(
       extendBody: true,
-      backgroundColor: Colors.white,
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
         elevation: 0,
         toolbarHeight: 75,
         leading: Builder(
@@ -179,10 +176,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text('You are on the main dashboard. Use sidebar for admin tools.')),
                           );
+                          
                         } else {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => userType == 'applicant' ? const ApplicantDashboardScreen() : const RecruiterDashboardScreen()),
+                            MaterialPageRoute(builder: (_) => userType == 'applicant' ? ApplicantDashboardScreen(
+                              onBrowseJobs: () {
+                                Navigator.pop(context);
+                                setState(() => _currentIndex = 0);
+                              },
+                            ) : const RecruiterDashboardScreen()),
                           );
                         }
                       } else if (value == 'profile') {
@@ -389,7 +392,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (isApplicant) {
       switch (_currentIndex) {
         case 0: return _buildHomeBody(context, isDesktop, userType);
-        case 1: return const ApplicantDashboardScreen(showAppBar: false); // Hide appbar when in bottom nav
+        case 1: return ApplicantDashboardScreen(
+                  showAppBar: false,
+                  onBrowseJobs: () => setState(() => _currentIndex = 0),
+                ); // Hide appbar when in bottom nav
         case 2: return const ApplicantApplicationsScreen();
         default: return const SizedBox.shrink();
       }
@@ -415,7 +421,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final primary = BrandColor.c500;
     
     return Drawer(
-      backgroundColor: Colors.white,
       child: Column(
         children: [
           Container(
@@ -433,7 +438,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               children: [
                 CircleAvatar(
                   radius: 35,
-                  backgroundColor: Colors.white,
                   backgroundImage: auth.userData?['profile']?['profile_image'] != null
                       ? NetworkImage(UrlHelper.resolveMediaUrl(auth.userData!['profile']['profile_image']))
                       : null,
@@ -470,7 +474,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     } else {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => userType == 'applicant' ? const ApplicantDashboardScreen() : const RecruiterDashboardScreen()),
+                        MaterialPageRoute(builder: (_) => userType == 'applicant' ? ApplicantDashboardScreen(
+                          onBrowseJobs: () {
+                            Navigator.pop(context);
+                            setState(() => _currentIndex = 0);
+                          },
+                        ) : const RecruiterDashboardScreen()),
                       );
                     }
                   },
@@ -571,35 +580,43 @@ class _DashboardScreenState extends State<DashboardScreen> {
           
           const SizedBox(height: 16),
           
-          // 2. Categories Section (Round symbols)
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0),
-            child: Text(
-              'Categories',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          // 2. Categories Section (Glassmorphism chips)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Explore Categories',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: -0.5),
+                ),
+                TextButton(
+                  onPressed: () {},
+                  style: TextButton.styleFrom(foregroundColor: BrandColor.c500, padding: EdgeInsets.zero, minimumSize: const Size(0, 0)),
+                  child: const Text('See All', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 12),
           SizedBox(
-            height: 120, // Slightly taller for better aspect
+            height: 90,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
               itemCount: 10,
               itemBuilder: (context, index) {
-                final categories = ['IT', 'Design', 'Sales', 'Finance', 'HR', 'Support', 'Marketing', 'Engineering', 'Healthcare', 'Education'];
-                final imagePaths = [
-                  'https://images.unsplash.com/photo-1518770660439-4636190af475?w=200&h=200&fit=crop', // IT
-                  'https://images.unsplash.com/photo-1558655146-d09347e92766?w=200&h=200&fit=crop', // Design
-                  'https://images.unsplash.com/photo-1552581234-26160f608093?w=200&h=200&fit=crop', // Sales
-                  'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=200&h=200&fit=crop', // Finance
-                  'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=200&h=200&fit=crop', // HR
-                  'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=200&h=200&fit=crop', // Support
-                  'https://images.unsplash.com/photo-1533750516457-a7f992034fec?w=200&h=200&fit=crop', // Marketing
-                  'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=200&h=200&fit=crop', // Engineering
-                  'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=200&h=200&fit=crop', // Healthcare
-                  'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=200&h=200&fit=crop', // Education
+                final categories = ['IT & Tech', 'Design', 'Sales', 'Finance', 'HR', 'Support', 'Marketing', 'Engineering', 'Healthcare', 'Education'];
+                final icons = [Bootstrap.laptop, Bootstrap.palette, Bootstrap.graph_up_arrow, Bootstrap.cash_coin, Bootstrap.people, Bootstrap.headset, Bootstrap.megaphone, Bootstrap.gear, Bootstrap.heart_pulse, Bootstrap.book];
+                final colors = [
+                  const Color(0xFF3B82F6), const Color(0xFF8B5CF6), const Color(0xFF10B981),
+                  const Color(0xFFF59E0B), const Color(0xFFEF4444), const Color(0xFF06B6D4),
+                  const Color(0xFFEC4899), const Color(0xFF64748B), const Color(0xFF14B8A6),
+                  const Color(0xFFF97316),
                 ];
+                
+                final isDark = Theme.of(context).brightness == Brightness.dark;
+                
                 return GestureDetector(
                   onTap: () {
                     final provider = context.read<JobProvider>();
@@ -610,44 +627,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         content: Text('Showing ${categories[index]} jobs'),
                         duration: const Duration(seconds: 1),
                         behavior: SnackBarBehavior.floating,
-                        backgroundColor: BrandColor.c500,
+                        backgroundColor: colors[index],
                       ),
                     );
                   },
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 6.0),
                     child: Column(
                       children: [
                         Container(
-                          width: 70,
-                          height: 70,
+                          width: 60,
+                          height: 60,
                           decoration: BoxDecoration(
-                            color: Colors.grey[200],
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 8,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                            image: DecorationImage(
-  image: NetworkImage(
-    imagePaths[index].startsWith("http")
-        ? imagePaths[index]
-        : "$baseUrl${imagePaths[index]}",
-  ),
-  fit: BoxFit.cover,
-),
+                            gradient: LinearGradient(
+                              colors: [colors[index].withValues(alpha: 0.2), colors[index].withValues(alpha: 0.05)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            border: Border.all(color: colors[index].withValues(alpha: 0.3), width: 1.5),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Center(
+                            child: Icon(icons[index], color: colors[index], size: 24),
                           ),
                         ),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 8),
                         Text(
                           categories[index],
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: NeutralColor.c900,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: isDark ? Colors.white70 : NeutralColor.c800,
                           ),
                         ),
                       ],
@@ -882,64 +892,84 @@ class _DashboardScreenState extends State<DashboardScreen> {
         final settings = provider.settings;
         if (settings == null) return const SizedBox.shrink();
 
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Container(
             height: 140, // Compact height
             width: double.infinity,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              image: const DecorationImage(
-                image: AssetImage('assets/images/slider_1.jpg'),
-                fit: BoxFit.cover,
+              borderRadius: BorderRadius.circular(24),
+              gradient: LinearGradient(
+                colors: isDark 
+                    ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
+                    : [const Color(0xFF2563EB), const Color(0xFF4F46E5)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
+                  color: isDark ? Colors.black.withValues(alpha: 0.5) : const Color(0xFF2563EB).withValues(alpha: 0.3),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
                 ),
               ],
             ),
             child: Stack(
               children: [
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    gradient: LinearGradient(
-                      begin: Alignment.bottomCenter,
-                      end: Alignment.topCenter,
-                      colors: [
-                        Colors.black.withValues(alpha: 0.7),
-                        Colors.transparent,
-                      ],
+                // Decorative circles
+                Positioned(
+                  top: -20,
+                  right: -20,
+                  child: Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.1),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: -40,
+                  left: 20,
+                  child: Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.1),
                     ),
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(20.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       const Expanded(
                         child: Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Looking for a job?',
+                              'Accelerate Your Career',
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: -0.5,
                               ),
                             ),
+                            SizedBox(height: 4),
                             Text(
-                              'Contact us for immediate help',
+                              'Connect with top employers today.',
                               style: TextStyle(
                                 color: Colors.white70,
-                                fontSize: 12,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
@@ -947,15 +977,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       Row(
                         children: [
-                          _buildCircleIcon(
-                            icon: Icons.phone,
-                            color: Colors.white,
-                            bgColor: IndigoColor.c500,
+                          _buildModernCircleIcon(
+                            icon: Bootstrap.telephone_fill,
+                            color: const Color(0xFF2563EB),
+                            bgColor: Colors.white,
                             onTap: () => launchUrl(Uri.parse('tel:${settings.phoneNumber}')),
                           ),
                           const SizedBox(width: 12),
-                          _buildCircleIcon(
-                            icon: Icons.chat,
+                          _buildModernCircleIcon(
+                            icon: Bootstrap.whatsapp,
                             color: Colors.white,
                             bgColor: const Color(0xFF25D366),
                             onTap: () {
@@ -976,7 +1006,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildCircleIcon({
+  Widget _buildModernCircleIcon({
     required IconData icon,
     required Color color,
     required Color bgColor,
@@ -985,15 +1015,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: bgColor,
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.2),
-              blurRadius: 5,
-              offset: const Offset(0, 2),
+              color: Colors.black.withValues(alpha: 0.15),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
           ],
         ),

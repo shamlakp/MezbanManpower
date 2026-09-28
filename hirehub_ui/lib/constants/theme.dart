@@ -6,6 +6,7 @@ import 'colors.dart';
 // ─────────────────────────────────────────────
 
 ThemeData lightTheme = ThemeData(
+  useMaterial3: true,
   fontFamily: 'Inter',
   scaffoldBackgroundColor: NeutralColor.c50, // rgb(252, 252, 253) near-white
 
@@ -160,15 +161,16 @@ ThemeData lightTheme = ThemeData(
 // ─────────────────────────────────────────────
 
 ThemeData darkTheme = ThemeData(
+  useMaterial3: true,
   brightness: Brightness.dark,
   fontFamily: 'Inter',
-  scaffoldBackgroundColor: const Color(0xFF0F172A), // Slate 900
+  scaffoldBackgroundColor: Colors.black, // True Black
 
   colorScheme: ColorScheme.dark(
     // ── Backgrounds ───────────────────────────────────────────
-    background:       const Color(0xFF0F172A), // Slate 900
-    surface:          const Color(0xFF1E293B), // Slate 800
-    surfaceVariant:   const Color(0xFF334155), // Slate 700
+    background:       Colors.black, // True Black
+    surface:          const Color(0xFF121212), // Very dark gray for contrast
+    surfaceVariant:   const Color(0xFF1E1E1E), // Slightly lighter gray
 
     // ── Brand / Primary ───────────────────────────────────────
     primary:          Colors.white,
@@ -190,12 +192,12 @@ ThemeData darkTheme = ThemeData(
     errorContainer:   DangerColor.c900.withOpacity(0.3),
 
     // ── Outline ───────────────────────────────────────────────
-    outline:          const Color(0xFF334155), // Slate 700
+    outline:          const Color(0xFF2C2C2C), // Dark border
   ),
 
   // ── AppBar ────────────────────────────────────────────────
   appBarTheme: const AppBarTheme(
-    backgroundColor:  Color(0xFF0F172A),
+    backgroundColor:  Colors.black,
     foregroundColor:  NeutralColor.c50,
     elevation:        0,
     centerTitle:      false,
@@ -210,18 +212,18 @@ ThemeData darkTheme = ThemeData(
 
   // ── Card ──────────────────────────────────────────────────
   cardTheme: const CardThemeData(
-    color:            Color(0xFF1E293B), // Slate 800
+    color:            Color(0xFF121212), // Very dark gray
     elevation:        0,
     shape: RoundedRectangleBorder(
       borderRadius:   BorderRadius.all(Radius.circular(16)),
-      side:           BorderSide(color: Color(0xFF334155)),
+      side:           BorderSide(color: Color(0xFF2C2C2C)),
     ),
   ),
 
   // ── Input / TextField ─────────────────────────────────────
   inputDecorationTheme: InputDecorationTheme(
     filled:           true,
-    fillColor:        const Color(0xFF1E293B),
+    fillColor:        const Color(0xFF121212),
     contentPadding:   const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     border: OutlineInputBorder(
       borderRadius:   const BorderRadius.all(Radius.circular(12)),

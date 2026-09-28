@@ -7,6 +7,7 @@ urlpatterns = [
     path('dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('approve-job/<int:job_id>/', views.approve_job, name='approve_job'),
     path('deactivate-job/<int:job_id>/', views.deactivate_job, name='deactivate_job'),
+    path('notification/<int:notif_id>/read/', views.mark_notification_read, name='mark_notification_read'),
     #job/company management
      path('company/add/', views.add_company,    name='add_company'),
      path('jobs/', views.manage_jobs, name='manage_jobs'),

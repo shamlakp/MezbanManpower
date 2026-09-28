@@ -32,8 +32,8 @@ class ApiService {
 
   ApiService._internal() : _dio = Dio() {
     _dio.options.baseUrl = getBaseUrl();
-    _dio.options.connectTimeout = const Duration(seconds: 5);
-    _dio.options.receiveTimeout = const Duration(seconds: 3);
+    _dio.options.connectTimeout = const Duration(seconds: 30);
+    _dio.options.receiveTimeout = const Duration(seconds: 30);
 
     _dio.interceptors.add(
       InterceptorsWrapper(

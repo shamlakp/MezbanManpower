@@ -74,7 +74,7 @@ class CustomTextFormField extends StatelessWidget {
           style ?? CustomTextStyle.body14.copyWith(fontWeight: FontWeight.w500),
       decoration: InputDecoration(
         filled: true,
-        fillColor: const Color.fromARGB(255, 247, 247, 247),
+        fillColor: fillColor ?? Theme.of(context).inputDecorationTheme.fillColor ?? const Color.fromARGB(255, 247, 247, 247),
         border: OutlineInputBorder(
           borderSide: BorderSide(
               color: Theme.of(context).colorScheme.onPrimary, width: 0.3),
