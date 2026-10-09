@@ -238,13 +238,13 @@ class _JobGridCardState extends State<JobGridCard> with SingleTickerProviderStat
       children: [
         _buildInfoRow(
           Icons.location_on_outlined, 
-          job.location, 
+          job.destinationCountry.isNotEmpty ? job.destinationCountry : job.location, 
           isDark ? Colors.white70 : Colors.grey[700]!,
         ),
         const SizedBox(height: 6),
         _buildInfoRow(
           Icons.payments_outlined, 
-          '\$${job.salary}', 
+          '${job.salary} ${job.salaryCurrency}', 
           isDark ? Colors.white70 : Colors.grey[700]!,
         ),
       ],

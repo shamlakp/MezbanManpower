@@ -80,10 +80,18 @@ class JobPost(models.Model):
     working_time = models.CharField(max_length=100)
     working_days = models.CharField(max_length=100)
     salary = models.CharField(max_length=100, blank=True)
+    salary_currency = models.CharField(max_length=10, default='INR')
     annual_leave = models.IntegerField(default=0)
     benefits = models.TextField(blank=True)
     is_approved = models.BooleanField(default=False)
     image = models.ImageField(upload_to='job_images/', blank=True, null=True)
+    
+    # Manpower Agency Specific Fields
+    destination_country = models.CharField(max_length=100, blank=True)
+    processing_fee = models.CharField(max_length=100, blank=True)
+    medical_cost = models.CharField(max_length=100, blank=True)
+    visa_cost = models.CharField(max_length=100, blank=True)
+    ticket_policy = models.CharField(max_length=100, blank=True, help_text="e.g. Paid by Company, Self-paid")
 
     def __str__(self):
         return f"{self.position} at {self.company.company_name}"
@@ -91,8 +99,12 @@ class JobPost(models.Model):
 
 class JobApplication(models.Model):
     STATUS_CHOICES = (
-        ('pending', 'Pending'),
-        ('shortlisted', 'Shortlisted'),
+        ('pending', 'Pending / Applied'),
+        ('shortlisted', 'Selected / Shortlisted'),
+        ('medical', 'Medical Test'),
+        ('visa', 'Visa Processing'),
+        ('ticket', 'Ticket Booked'),
+        ('deployed', 'Deployed'),
         ('rejected', 'Rejected'),
     )
     job = models.ForeignKey(JobPost, on_delete=models.CASCADE, related_name='applications')
@@ -108,3 +120,25 @@ class JobApplication(models.Model):
 
     def __str__(self):
         return f"{self.applicant.user.username} - {self.job.position}"
+
+
+class ApplicantDocument(models.Model):
+    DOC_TYPES = (
+        ('passport', 'Passport'),
+        ('medical', 'Medical Certificate'),
+        ('education', 'Educational Certificate'),
+        ('visa', 'Visa Copy'),
+        ('contract', 'Contract Copy'),
+        ('ticket', 'Flight Ticket'),
+        ('photo', 'Passport Size Photo'),
+        ('other', 'Other'),
+    )
+    applicant = models.ForeignKey(ApplicantProfile, on_delete=models.CASCADE, related_name='documents')
+    document_type = models.CharField(max_length=20, choices=DOC_TYPES)
+    file = models.FileField(upload_to='applicant_documents/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    is_verified = models.BooleanField(default=False)
+    expiry_date = models.DateField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.applicant.user.username} - {self.get_document_type_display()}"

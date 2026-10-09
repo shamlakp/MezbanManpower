@@ -20,11 +20,11 @@ from rest_framework.exceptions import ValidationError, PermissionDenied
 
 logger = logging.getLogger(__name__)
 
-from .serializers import ApplicantProfileSerializer, CompanyProfileSerializer, JobApplicationSerializer, JobPostSerializer
+from .serializers import ApplicantProfileSerializer, CompanyProfileSerializer, JobApplicationSerializer, JobPostSerializer, ApplicantDocumentSerializer
 from adminpanel.serializers import ApplicantSerializer
 
 from .utils import get_dashboard_url, notify_admin_on_login
-from .models import JobPost, CompanyProfile, ApplicantProfile, JobApplication 
+from .models import JobPost, CompanyProfile, ApplicantProfile, JobApplication, ApplicantDocument
 from .forms import RecruiterForm, ApplicantForm, CompanyProfileForm, JobPostForm
 from adminpanel.models import OTPVerification, AdminNotification
 
@@ -272,3 +272,25 @@ class JobApplicationViewSet(viewsets.ModelViewSet):
         if user.user_type not in ['recruiter', 'admin']:
             raise PermissionDenied("Only recruiters or administrators can update application status.")
         serializer.save()
+
+class ApplicantDocumentViewSet(viewsets.ModelViewSet):
+    serializer_class = ApplicantDocumentSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.user_type == 'admin':
+            return ApplicantDocument.objects.all()
+        elif user.user_type == 'applicant':
+            applicant = ApplicantProfile.objects.filter(user=user).first()
+            return ApplicantDocument.objects.filter(applicant=applicant)
+        return ApplicantDocument.objects.none()
+
+    def perform_create(self, serializer):
+        applicant = ApplicantProfile.objects.filter(user=self.request.user).first()
+        if not applicant:
+            raise ValidationError("You must have an Applicant Profile to upload documents.")
+        serializer.save(applicant=applicant)
+

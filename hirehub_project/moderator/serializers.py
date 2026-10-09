@@ -31,7 +31,7 @@ class JobPostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = JobPost
-        fields = ['id', 'company', 'position', 'company_name', 'no_of_vacancies', 'location', 'salary', 'is_approved', 'image', 'created_at', 'working_time', 'working_days', 'responsibilities', 'qualifications', 'benefits', 'annual_leave', 'industry', 'accommodation', 'meals', 'category', 'department']
+        fields = ['id', 'company', 'position', 'company_name', 'no_of_vacancies', 'location', 'salary', 'salary_currency', 'is_approved', 'image', 'created_at', 'working_time', 'working_days', 'responsibilities', 'qualifications', 'benefits', 'annual_leave', 'industry', 'accommodation', 'meals', 'category', 'department', 'destination_country', 'processing_fee', 'medical_cost', 'visa_cost', 'ticket_policy']
 
 
 class ApplicantProfileSerializer(serializers.ModelSerializer):
@@ -61,6 +61,21 @@ class ApplicantProfileSerializer(serializers.ModelSerializer):
         # ImageField and FileField in validated_data will handle the files
         return super().update(instance, validated_data)
 
+class ApplicantDocumentSerializer(serializers.ModelSerializer):
+    document_type_display = serializers.CharField(source='get_document_type_display', read_only=True)
+    file = serializers.FileField(required=True, use_url=False)
+    
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        if instance.file:
+            ret['file'] = '/media/' + instance.file.name.replace('\\\\', '/')
+        return ret
+
+    class Meta:
+        from .models import ApplicantDocument
+        model = ApplicantDocument
+        fields = ['id', 'document_type', 'document_type_display', 'file', 'uploaded_at', 'is_verified', 'expiry_date']
+        read_only_fields = ['id', 'uploaded_at', 'is_verified']
 
 class JobApplicationSerializer(serializers.ModelSerializer):
     job_position = serializers.CharField(source='job.position', read_only=True)

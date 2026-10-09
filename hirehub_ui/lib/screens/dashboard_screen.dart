@@ -23,6 +23,7 @@ import 'recruiter_dashboard_screen.dart';
 import 'applicant_applications_screen.dart';
 import 'applicant_dashboard_screen.dart';
 import 'admin_profile_screen.dart';
+import 'applicant_documents_screen.dart';
 import 'create_job_screen.dart';
 
 import '../utils/location_helper.dart';
@@ -129,7 +130,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         debugPrint('Logout error: $e');
       }
       navigator.pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const DashboardScreen()),
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
         (route) => false,
       );
     }
@@ -501,6 +502,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     );
                   },
                 ),
+                if (userType == 'applicant')
+                  _buildDrawerItem(
+                    icon: Icons.badge_outlined,
+                    title: 'My Documents',
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const ApplicantDocumentsScreen()),
+                      );
+                    },
+                  ),
                 _buildDrawerItem(
                   icon: Icons.description_outlined,
                   title: 'My Applications',
@@ -587,7 +600,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
-                  'Explore Categories',
+                  'Top Destinations',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: -0.5),
                 ),
                 TextButton(
@@ -601,68 +614,79 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(height: 12),
           SizedBox(
             height: 90,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              itemCount: 10,
-              itemBuilder: (context, index) {
-                final categories = ['IT & Tech', 'Design', 'Sales', 'Finance', 'HR', 'Support', 'Marketing', 'Engineering', 'Healthcare', 'Education'];
-                final icons = [Bootstrap.laptop, Bootstrap.palette, Bootstrap.graph_up_arrow, Bootstrap.cash_coin, Bootstrap.people, Bootstrap.headset, Bootstrap.megaphone, Bootstrap.gear, Bootstrap.heart_pulse, Bootstrap.book];
-                final colors = [
-                  const Color(0xFF3B82F6), const Color(0xFF8B5CF6), const Color(0xFF10B981),
-                  const Color(0xFFF59E0B), const Color(0xFFEF4444), const Color(0xFF06B6D4),
-                  const Color(0xFFEC4899), const Color(0xFF64748B), const Color(0xFF14B8A6),
-                  const Color(0xFFF97316),
-                ];
+            child: Consumer<JobProvider>(
+              builder: (context, provider, child) {
+                // Get unique locations from available jobs
+                final uniqueLocations = provider.jobs
+                    .map((job) => job.location.trim())
+                    .where((loc) => loc.isNotEmpty)
+                    .toSet()
+                    .toList();
+
+                // Default list in case there are no jobs yet
+                final defaultCountries = ['Saudi Arabia', 'UAE', 'Qatar', 'Kuwait', 'Oman', 'Bahrain'];
                 
-                final isDark = Theme.of(context).brightness == Brightness.dark;
-                
-                return GestureDetector(
-                  onTap: () {
-                    final provider = context.read<JobProvider>();
-                    provider.clearSearch(); // Clear other filters first
-                    provider.searchJobs(categories: [categories[index]]);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Showing ${categories[index]} jobs'),
-                        duration: const Duration(seconds: 1),
-                        behavior: SnackBarBehavior.floating,
-                        backgroundColor: colors[index],
+                final displayCountries = uniqueLocations.isNotEmpty ? uniqueLocations : defaultCountries;
+
+                return ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  itemCount: displayCountries.length,
+                  itemBuilder: (context, index) {
+                    final countryName = displayCountries[index];
+                    final flagAndColor = _getCountryFlagAndColor(countryName);
+                    final flag = flagAndColor.key;
+                    final color = flagAndColor.value;
+                    
+                    final isDark = Theme.of(context).brightness == Brightness.dark;
+                    
+                    return GestureDetector(
+                      onTap: () {
+                        provider.clearSearch(); // Clear other filters first
+                        provider.searchJobs(location: countryName);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Showing jobs in $countryName'),
+                            duration: const Duration(seconds: 1),
+                            behavior: SnackBarBehavior.floating,
+                            backgroundColor: color,
+                          ),
+                        );
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 6.0),
+                        child: Column(
+                          children: [
+                            Container(
+                              width: 60,
+                              height: 60,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [color.withValues(alpha: 0.2), color.withValues(alpha: 0.05)],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                border: Border.all(color: color.withValues(alpha: 0.3), width: 1.5),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Center(
+                                child: Text(flag, style: const TextStyle(fontSize: 28)),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              countryName.length > 12 ? '${countryName.substring(0, 10)}...' : countryName,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: isDark ? Colors.white70 : NeutralColor.c800,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6.0),
-                    child: Column(
-                      children: [
-                        Container(
-                          width: 60,
-                          height: 60,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [colors[index].withValues(alpha: 0.2), colors[index].withValues(alpha: 0.05)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            border: Border.all(color: colors[index].withValues(alpha: 0.3), width: 1.5),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Center(
-                            child: Icon(icons[index], color: colors[index], size: 24),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          categories[index],
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: isDark ? Colors.white70 : NeutralColor.c800,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                 );
               },
             ),
@@ -904,13 +928,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
               gradient: LinearGradient(
                 colors: isDark 
                     ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
-                    : [const Color(0xFF2563EB), const Color(0xFF4F46E5)],
+                    : [const Color(0xFF334155), const Color(0xFF0F172A)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: isDark ? Colors.black.withValues(alpha: 0.5) : const Color(0xFF2563EB).withValues(alpha: 0.3),
+                  color: isDark ? Colors.black.withValues(alpha: 0.5) : const Color(0xFF334155).withValues(alpha: 0.3),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
@@ -1030,5 +1054,38 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: Icon(icon, color: color, size: 20),
       ),
     );
+  }
+
+  MapEntry<String, Color> _getCountryFlagAndColor(String location) {
+    final loc = location.toLowerCase();
+    if (loc.contains('saudi') || loc.contains('ksa')) return const MapEntry('🇸🇦', Color(0xFF006C35));
+    if (loc.contains('uae') || loc.contains('emirates') || loc.contains('dubai') || loc.contains('abu dhabi')) return const MapEntry('🇦🇪', Color(0xFF00732F));
+    if (loc.contains('qatar') || loc.contains('doha')) return const MapEntry('🇶🇦', Color(0xFF8A1538));
+    if (loc.contains('kuwait')) return const MapEntry('🇰🇼', Color(0xFF007A3D));
+    if (loc.contains('oman') || loc.contains('muscat')) return const MapEntry('🇴🇲', Color(0xFFDB161B));
+    if (loc.contains('bahrain') || loc.contains('manama')) return const MapEntry('🇧🇭', Color(0xFFCE1126));
+    if (loc.contains('malaysia') || loc.contains('kuala lumpur')) return const MapEntry('🇲🇾', Color(0xFF012C7A));
+    if (loc.contains('singapore')) return const MapEntry('🇸🇬', Color(0xFFED2939));
+    if (loc.contains('usa') || loc.contains('united states') || loc.contains('america')) return const MapEntry('🇺🇸', Color(0xFF3C3B6E));
+    if (loc.contains('uk') || loc.contains('united kingdom') || loc.contains('london') || loc.contains('england')) return const MapEntry('🇬🇧', Color(0xFF012169));
+    if (loc.contains('canada') || loc.contains('toronto')) return const MapEntry('🇨🇦', Color(0xFFFF0000));
+    if (loc.contains('australia') || loc.contains('sydney')) return const MapEntry('🇦🇺', Color(0xFF00008B));
+    if (loc.contains('india') || loc.contains('delhi') || loc.contains('mumbai')) return const MapEntry('🇮🇳', Color(0xFFFF9933));
+    if (loc.contains('pakistan') || loc.contains('karachi') || loc.contains('lahore')) return const MapEntry('🇵🇰', Color(0xFF006600));
+    if (loc.contains('bangladesh') || loc.contains('dhaka')) return const MapEntry('🇧🇩', Color(0xFF006A4E));
+    if (loc.contains('nepal') || loc.contains('kathmandu')) return const MapEntry('🇳🇵', Color(0xFFDC143C));
+    if (loc.contains('sri lanka') || loc.contains('colombo')) return const MapEntry('🇱🇰', Color(0xFFFFBE29));
+    if (loc.contains('philippines') || loc.contains('manila')) return const MapEntry('🇵🇭', Color(0xFF0038A8));
+    if (loc.contains('indonesia') || loc.contains('jakarta')) return const MapEntry('🇮🇩', Color(0xFFFF0000));
+    if (loc.contains('vietnam') || loc.contains('hanoi')) return const MapEntry('🇻🇳', Color(0xFFDA251D));
+    if (loc.contains('thailand') || loc.contains('bangkok')) return const MapEntry('🇹🇭', Color(0xFFA51931));
+    if (loc.contains('japan') || loc.contains('tokyo')) return const MapEntry('🇯🇵', Color(0xFFBC002D));
+    if (loc.contains('korea') || loc.contains('seoul')) return const MapEntry('🇰🇷', Color(0xFF0047A0));
+    if (loc.contains('china') || loc.contains('beijing')) return const MapEntry('🇨🇳', Color(0xffee1c25));
+    if (loc.contains('germany') || loc.contains('berlin')) return const MapEntry('🇩🇪', Color(0xFFFFCE00));
+    if (loc.contains('france') || loc.contains('paris')) return const MapEntry('🇫🇷', Color(0xFF002395));
+    
+    // Default fallback
+    return const MapEntry('🌍', BrandColor.c500);
   }
 }

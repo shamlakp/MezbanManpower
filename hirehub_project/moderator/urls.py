@@ -16,6 +16,7 @@ router = DefaultRouter()
 router.register(r'api/companies', views.CompanyViewSet)
 router.register(r'api/jobs', views.JobPostViewSet)
 router.register(r'api/applications', views.JobApplicationViewSet, basename='jobapplication')
+router.register(r'api/applicant/documents', views.ApplicantDocumentViewSet, basename='applicantdocument')
 
 urlpatterns += router.urls
 

@@ -24,6 +24,15 @@ class JobPost {
   final String meals;
   final String category;
   final String department;
+  
+  // Agency Fields
+  final String destinationCountry;
+  final String processingFee;
+  final String medicalCost;
+  final String visaCost;
+  final String ticketPolicy;
+  final String salaryCurrency;
+  
   final DateTime createdAt;
 
   JobPost({
@@ -48,6 +57,12 @@ class JobPost {
     this.meals = '',
     this.category = '',
     this.department = '',
+    this.destinationCountry = '',
+    this.processingFee = '',
+    this.medicalCost = '',
+    this.visaCost = '',
+    this.ticketPolicy = '',
+    this.salaryCurrency = 'INR',
   });
 
   factory JobPost.fromJson(Map<String, dynamic> json) {
@@ -73,6 +88,12 @@ class JobPost {
       meals: json['meals'] ?? '',
       category: json['category'] ?? '',
       department: json['department'] ?? '',
+      destinationCountry: json['destination_country'] ?? '',
+      processingFee: json['processing_fee'] ?? '',
+      medicalCost: json['medical_cost'] ?? '',
+      visaCost: json['visa_cost'] ?? '',
+      ticketPolicy: json['ticket_policy'] ?? '',
+      salaryCurrency: json['salary_currency'] ?? 'INR',
     );
   }
 }

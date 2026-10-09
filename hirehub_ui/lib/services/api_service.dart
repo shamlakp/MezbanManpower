@@ -524,6 +524,58 @@ class ApiService {
     }
   }
 
+  Future<Response> getApplicantDocuments() async {
+    try {
+      final response = await _dio.get('/api/applicant/documents/');
+      return response;
+    } catch (e) {
+      _logError('getApplicantDocuments', e);
+      rethrow;
+    }
+  }
+
+  Future<Response> uploadApplicantDocument(String documentType, PlatformFile file) async {
+    try {
+      final formData = FormData();
+      formData.fields.add(MapEntry('document_type', documentType));
+      
+      if (kIsWeb) {
+        if (file.bytes != null) {
+          formData.files.add(
+            MapEntry(
+              'file',
+              MultipartFile.fromBytes(
+                file.bytes!,
+                filename: file.name,
+              ),
+            ),
+          );
+        }
+      } else {
+        if (file.path != null) {
+          formData.files.add(
+            MapEntry(
+              'file',
+              await MultipartFile.fromFile(
+                file.path!,
+                filename: file.name,
+              ),
+            ),
+          );
+        }
+      }
+
+      final response = await _dio.post(
+        '/api/applicant/documents/',
+        data: formData,
+      );
+      return response;
+    } catch (e) {
+      _logError('uploadApplicantDocument', e);
+      rethrow;
+    }
+  }
+
   static String getBaseUrl() {
     if (kIsWeb) {
       if (kDebugMode) return 'http://localhost:8000';
